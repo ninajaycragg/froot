@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import type { SizeResult, Measurements } from './sizing'
 
@@ -36,9 +36,12 @@ function plusFourSize(ms: Measurements): string {
   return `${band}${US_CUPS[Math.min(diff + 1, US_CUPS.length - 1)]}`
 }
 
+const EASE: [number, number, number, number] = [0.16, 1, 0.3, 1]
+
 export default function ShockCard({ result, measurements, oldSize }: ShockCardProps) {
   const cardRef = useRef<HTMLDivElement>(null)
   const [saved, setSaved] = useState(false)
+  const [phase, setPhase] = useState(0)
 
   const before = oldSize || (measurements ? plusFourSize(measurements) : null)
   if (!before) return null
@@ -47,15 +50,21 @@ export default function ShockCard({ result, measurements, oldSize }: ShockCardPr
   const newParsed = parseBandCup(result.sizeUS)
   if (!oldParsed || !newParsed) return null
 
-  // Cup difference = letter difference + band change (each band down ≈ 1 cup up)
-  const cupDiff = Math.round((newParsed.cupI - oldParsed.cupI) + (oldParsed.band - newParsed.band) / 2)
+  const cupDiff = newParsed.cupI - oldParsed.cupI
   if (cupDiff < 1 && before.toLowerCase() === result.sizeUS.toLowerCase()) return null
 
-  const diffText = cupDiff >= 1 ? `off by ${cupDiff} cup size${cupDiff !== 1 ? 's' : ''}` : null
-
-  // Clean display sizes
   const displayOld = before.toUpperCase()
   const displayNew = result.sizeUS
+
+  useEffect(() => {
+    const timers = [
+      setTimeout(() => setPhase(1), 300),
+      setTimeout(() => setPhase(2), 1000),
+      setTimeout(() => setPhase(3), 1800),
+      setTimeout(() => setPhase(4), 2600),
+    ]
+    return () => timers.forEach(clearTimeout)
+  }, [])
 
   async function handleSave() {
     if (!cardRef.current) return
@@ -71,7 +80,7 @@ export default function ShockCard({ result, measurements, oldSize }: ShockCardPr
     } catch {
       if (navigator.share) {
         navigator.share({
-          title: `I was wearing ${displayOld}. I'm actually ${displayNew}.`,
+          title: `My real size is ${displayNew}`,
           url: 'https://froot.fit',
         })
       }
@@ -79,197 +88,167 @@ export default function ShockCard({ result, measurements, oldSize }: ShockCardPr
   }
 
   async function handleShare() {
-    const text = `I was wearing ${displayOld}. I\u2019m actually ${displayNew}.${diffText ? ` ${diffText}.` : ''} \u2014 froot.fit`
+    const text = `Turns out I\u2019m a ${displayNew}, not a ${displayOld}. Found my real size at froot.fit`
     if (navigator.share) {
       try {
-        await navigator.share({ title: 'My real bra size', text, url: 'https://froot.fit' })
+        await navigator.share({ title: 'My real size', text, url: 'https://froot.fit' })
         return
       } catch { /* cancelled */ }
     }
     await navigator.clipboard.writeText(text)
   }
 
-  const EASE: [number, number, number, number] = [0.16, 1, 0.3, 1]
-
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 56 }}>
-      {/* ── The Card ── */}
-      <div
-        ref={cardRef}
-        style={{
-          width: 360,
-          maxWidth: '100%',
-          padding: '52px 40px',
-          borderRadius: 24,
-          background: '#1A0808',
-          color: '#FAF6EE',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          textAlign: 'center',
-          fontFamily: 'var(--font-space-mono), monospace',
-          position: 'relative',
-          overflow: 'hidden',
-        }}
+      <motion.div
+        initial={{ opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 1.2, ease: EASE }}
       >
-        {/* "you were wearing" */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3, duration: 0.5 }}
+        <div
+          ref={cardRef}
           style={{
-            fontSize: 9,
-            letterSpacing: '0.2em',
-            textTransform: 'uppercase',
-            opacity: 0.4,
-            marginBottom: 12,
+            width: 360,
+            maxWidth: '100%',
+            padding: '56px 44px 48px',
+            borderRadius: 24,
+            background: '#1A0808',
+            color: '#FAF6EE',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            textAlign: 'center',
+            fontFamily: 'var(--font-space-mono), monospace',
+            position: 'relative',
+            overflow: 'hidden',
+            boxShadow: '0 24px 64px rgba(0,0,0,0.35), 0 0 0 1px rgba(212,160,32,0.06)',
           }}
         >
-          you were wearing
-        </motion.div>
+          {/* Warm ambient glow */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={phase >= 2 ? { opacity: 1 } : {}}
+            transition={{ duration: 3, ease: 'easeOut' }}
+            style={{
+              position: 'absolute',
+              width: 300,
+              height: 300,
+              borderRadius: '50%',
+              background: 'radial-gradient(circle, rgba(212,160,32,0.08) 0%, transparent 70%)',
+              top: '35%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              pointerEvents: 'none',
+              filter: 'blur(30px)',
+            }}
+          />
 
-        <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5, duration: 0.4, ease: EASE }}
-          style={{
-            fontFamily: 'var(--font-dm-serif), Georgia, serif',
-            fontStyle: 'italic',
-            fontSize: 36,
-            opacity: 0.5,
-            lineHeight: 1,
-            marginBottom: 28,
-            textDecoration: 'line-through',
-            textDecorationColor: 'rgba(250,246,238,0.2)',
-            textDecorationThickness: '1.5px',
-          }}
-        >
-          {displayOld}
-        </motion.div>
+          {/* ── Old size — quiet, small, just context ── */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={phase >= 1 ? { opacity: 0.2 } : {}}
+            transition={{ duration: 0.8, ease: EASE }}
+            style={{
+              fontSize: 9,
+              letterSpacing: '0.15em',
+              marginBottom: 12,
+            }}
+          >
+            {displayOld}
+          </motion.div>
 
-        {/* Gold divider */}
-        <motion.div
-          initial={{ width: 0 }}
-          animate={{ width: 40 }}
-          transition={{ delay: 0.8, duration: 0.4, ease: EASE }}
-          style={{ height: 1.5, background: '#D4A020', marginBottom: 28, borderRadius: 1 }}
-        />
+          {/* ── Arrow ── */}
+          <motion.div
+            initial={{ opacity: 0, y: -4 }}
+            animate={phase >= 1 ? { opacity: 0.15, y: 0 } : {}}
+            transition={{ delay: 0.3, duration: 0.5, ease: EASE }}
+            style={{ fontSize: 14, marginBottom: 28 }}
+          >
+            &darr;
+          </motion.div>
 
-        {/* "you're actually" */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.0, duration: 0.4 }}
-          style={{
-            fontSize: 9,
-            letterSpacing: '0.2em',
-            textTransform: 'uppercase',
-            color: '#D4A020',
-            marginBottom: 12,
-          }}
-        >
-          you&rsquo;re actually
-        </motion.div>
+          {/* ── The size ── */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.7, filter: 'blur(16px)' }}
+            animate={phase >= 2 ? { opacity: 1, scale: 1, filter: 'blur(0px)' } : {}}
+            transition={{
+              duration: 1.2,
+              ease: EASE,
+              scale: { type: 'spring', stiffness: 100, damping: 14 },
+            }}
+            style={{
+              fontFamily: 'var(--font-dm-serif), Georgia, serif',
+              fontStyle: 'italic',
+              fontSize: 80,
+              color: '#D4A020',
+              lineHeight: 1,
+              marginBottom: 0,
+              textShadow: '0 0 60px rgba(212,160,32,0.12)',
+            }}
+          >
+            {displayNew}
+          </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0, scale: 1.3 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 1.2, type: 'spring', stiffness: 200, damping: 15 }}
-          style={{
-            fontFamily: 'var(--font-dm-serif), Georgia, serif',
-            fontStyle: 'italic',
-            fontSize: 56,
-            color: '#D4A020',
-            lineHeight: 1,
-            marginBottom: 28,
-          }}
-        >
-          {displayNew}
-        </motion.div>
-
-        {/* Difference */}
-        {diffText && (
-          <>
-            <motion.div
-              initial={{ width: 0 }}
-              animate={{ width: 24 }}
-              transition={{ delay: 1.6, duration: 0.3 }}
-              style={{ height: 1, background: 'rgba(250,246,238,0.1)', marginBottom: 20, borderRadius: 1 }}
-            />
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 1.8, duration: 0.4 }}
-              style={{
-                fontSize: 12,
-                letterSpacing: '0.08em',
-                opacity: 0.6,
-                marginBottom: 8,
-              }}
-            >
-              {diffText}
-            </motion.div>
-          </>
-        )}
-
-        {/* Watermark */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 2.0, duration: 0.4 }}
-          style={{
-            fontSize: 9,
-            letterSpacing: '0.22em',
-            textTransform: 'uppercase',
-            opacity: 0.15,
-            marginTop: 24,
-          }}
-        >
-          froot.fit
-        </motion.div>
-      </div>
+          {/* ── Watermark ── */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={phase >= 4 ? { opacity: 0.1 } : {}}
+            transition={{ duration: 1 }}
+            style={{
+              fontSize: 8,
+              letterSpacing: '0.25em',
+              textTransform: 'uppercase',
+              marginTop: 40,
+            }}
+          >
+            froot.fit
+          </motion.div>
+        </div>
+      </motion.div>
 
       {/* ── Buttons ── */}
       <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 2.2, duration: 0.4 }}
+        initial={{ opacity: 0, y: 10 }}
+        animate={phase >= 4 ? { opacity: 1, y: 0 } : {}}
+        transition={{ duration: 0.5, ease: EASE }}
         style={{ display: 'flex', gap: 12, marginTop: 24 }}
       >
         <motion.button
-          whileHover={{ y: -1 }}
-          whileTap={{ scale: 0.97 }}
+          whileHover={{ y: -2 }}
+          whileTap={{ scale: 0.96 }}
           onClick={handleSave}
           style={{
-            padding: '14px 28px',
+            padding: '14px 30px',
             background: '#1A0808',
             color: '#FAF6EE',
-            border: 'none',
+            border: '1px solid rgba(212,160,32,0.1)',
             borderRadius: 100,
             fontFamily: 'var(--font-space-mono), monospace',
-            fontSize: 11,
-            letterSpacing: '0.1em',
+            fontSize: 10,
+            letterSpacing: '0.12em',
             textTransform: 'uppercase',
             cursor: 'pointer',
+            transition: 'border-color 0.3s ease',
           }}
         >
           {saved ? 'saved \u2713' : 'save this'}
         </motion.button>
         <motion.button
-          whileHover={{ y: -1 }}
-          whileTap={{ scale: 0.97 }}
+          whileHover={{ y: -2, background: 'rgba(26,8,8,0.04)' }}
+          whileTap={{ scale: 0.96 }}
           onClick={handleShare}
           style={{
-            padding: '14px 28px',
+            padding: '14px 30px',
             background: 'transparent',
             color: '#1A0808',
-            border: '1px solid rgba(26,8,8,0.15)',
+            border: '1px solid rgba(26,8,8,0.1)',
             borderRadius: 100,
             fontFamily: 'var(--font-space-mono), monospace',
-            fontSize: 11,
-            letterSpacing: '0.1em',
+            fontSize: 10,
+            letterSpacing: '0.12em',
             textTransform: 'uppercase',
             cursor: 'pointer',
+            transition: 'all 0.3s ease',
           }}
         >
           share
