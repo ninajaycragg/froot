@@ -58,10 +58,10 @@ export default function ShockCard({ result, measurements, oldSize }: ShockCardPr
 
   useEffect(() => {
     const timers = [
-      setTimeout(() => setPhase(1), 300),
-      setTimeout(() => setPhase(2), 1000),
-      setTimeout(() => setPhase(3), 1800),
-      setTimeout(() => setPhase(4), 2600),
+      setTimeout(() => setPhase(1), 400),
+      setTimeout(() => setPhase(2), 1400),
+      setTimeout(() => setPhase(3), 2600),
+      setTimeout(() => setPhase(4), 3600),
     ]
     return () => timers.forEach(clearTimeout)
   }, [])
@@ -88,7 +88,7 @@ export default function ShockCard({ result, measurements, oldSize }: ShockCardPr
   }
 
   async function handleShare() {
-    const text = `Turns out I\u2019m a ${displayNew}, not a ${displayOld}. Found my real size at froot.fit`
+    const text = `The sizing system said ${displayOld}. My body says ${displayNew}. 80% of women don\u2019t know their real size \u2014 froot.fit`
     if (navigator.share) {
       try {
         await navigator.share({ title: 'My real size', text, url: 'https://froot.fit' })
@@ -101,92 +101,137 @@ export default function ShockCard({ result, measurements, oldSize }: ShockCardPr
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 56 }}>
       <motion.div
-        initial={{ opacity: 0, y: 24 }}
+        initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 1.2, ease: EASE }}
+        transition={{ duration: 1, ease: EASE }}
       >
         <div
           ref={cardRef}
           style={{
-            width: 360,
+            width: 380,
             maxWidth: '100%',
-            padding: '56px 44px 48px',
-            borderRadius: 24,
-            background: '#1A0808',
+            padding: '64px 48px 56px',
+            borderRadius: 28,
+            background: 'linear-gradient(170deg, #1E0E0A 0%, #140808 50%, #1A0C08 100%)',
             color: '#FAF6EE',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             textAlign: 'center',
-            fontFamily: 'var(--font-space-mono), monospace',
             position: 'relative',
             overflow: 'hidden',
-            boxShadow: '0 24px 64px rgba(0,0,0,0.35), 0 0 0 1px rgba(212,160,32,0.06)',
+            boxShadow: '0 24px 80px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.02)',
           }}
         >
-          {/* Warm ambient glow */}
+          {/* Warm glow behind hero size */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={phase >= 2 ? { opacity: 1 } : {}}
-            transition={{ duration: 3, ease: 'easeOut' }}
+            transition={{ duration: 2.5, ease: 'easeOut' }}
             style={{
               position: 'absolute',
-              width: 300,
-              height: 300,
+              width: 260,
+              height: 260,
               borderRadius: '50%',
-              background: 'radial-gradient(circle, rgba(212,160,32,0.08) 0%, transparent 70%)',
-              top: '35%',
+              background: 'radial-gradient(circle, rgba(212,160,32,0.1) 0%, transparent 65%)',
+              top: '42%',
               left: '50%',
               transform: 'translate(-50%, -50%)',
               pointerEvents: 'none',
-              filter: 'blur(30px)',
+              filter: 'blur(40px)',
             }}
           />
 
-          {/* ── Old size — quiet, small, just context ── */}
+          {/* ── "the sizing system said" + old size ── */}
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={phase >= 1 ? { opacity: 0.2 } : {}}
+            initial={{ opacity: 0, y: 10 }}
+            animate={phase >= 1 ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.8, ease: EASE }}
             style={{
-              fontSize: 9,
-              letterSpacing: '0.15em',
-              marginBottom: 12,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: 10,
+              marginBottom: 40,
             }}
           >
-            {displayOld}
+            <span style={{
+              fontFamily: 'var(--font-space-mono), monospace',
+              fontSize: 8,
+              letterSpacing: '0.2em',
+              textTransform: 'uppercase',
+              opacity: 0.3,
+            }}>
+              the sizing system said
+            </span>
+            <span style={{
+              fontFamily: 'var(--font-dm-serif), Georgia, serif',
+              fontStyle: 'italic',
+              fontSize: 28,
+              opacity: 0.25,
+              lineHeight: 1,
+            }}>
+              {displayOld}
+            </span>
           </motion.div>
 
-          {/* ── Arrow ── */}
+          {/* ── "your body says" ── */}
           <motion.div
-            initial={{ opacity: 0, y: -4 }}
-            animate={phase >= 1 ? { opacity: 0.15, y: 0 } : {}}
-            transition={{ delay: 0.3, duration: 0.5, ease: EASE }}
-            style={{ fontSize: 14, marginBottom: 28 }}
+            initial={{ opacity: 0 }}
+            animate={phase >= 2 ? { opacity: 1 } : {}}
+            transition={{ duration: 0.7, ease: EASE }}
+            style={{
+              fontFamily: 'var(--font-space-mono), monospace',
+              fontSize: 8,
+              letterSpacing: '0.2em',
+              textTransform: 'uppercase',
+              color: '#D4A020',
+              marginBottom: 16,
+            }}
           >
-            &darr;
+            your body says
           </motion.div>
 
-          {/* ── The size ── */}
+          {/* ── THE SIZE — hero ── */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.7, filter: 'blur(16px)' }}
+            initial={{ opacity: 0, scale: 0.8, filter: 'blur(12px)' }}
             animate={phase >= 2 ? { opacity: 1, scale: 1, filter: 'blur(0px)' } : {}}
             transition={{
-              duration: 1.2,
-              ease: EASE,
-              scale: { type: 'spring', stiffness: 100, damping: 14 },
+              opacity: { duration: 0.8, ease: EASE },
+              filter: { duration: 1.2, ease: EASE },
+              scale: { type: 'spring', stiffness: 80, damping: 12, delay: 0.15 },
             }}
             style={{
               fontFamily: 'var(--font-dm-serif), Georgia, serif',
               fontStyle: 'italic',
-              fontSize: 80,
+              fontSize: 88,
               color: '#D4A020',
               lineHeight: 1,
-              marginBottom: 0,
-              textShadow: '0 0 60px rgba(212,160,32,0.12)',
+              letterSpacing: '-0.02em',
+              marginBottom: 44,
+              position: 'relative',
+              textShadow: '0 0 80px rgba(212,160,32,0.08)',
             }}
           >
             {displayNew}
+          </motion.div>
+
+          {/* ── Social proof line ── */}
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={phase >= 3 ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.6, ease: EASE }}
+            style={{
+              fontFamily: 'var(--font-space-mono), monospace',
+              fontSize: 9,
+              letterSpacing: '0.06em',
+              color: 'rgba(250,246,238,0.25)',
+              lineHeight: 1.8,
+            }}
+          >
+            80% of women don&rsquo;t know their real size.
+            <br />
+            <span style={{ color: 'rgba(212,160,32,0.45)' }}>now you do.</span>
           </motion.div>
 
           {/* ── Watermark ── */}
@@ -195,10 +240,11 @@ export default function ShockCard({ result, measurements, oldSize }: ShockCardPr
             animate={phase >= 4 ? { opacity: 0.1 } : {}}
             transition={{ duration: 1 }}
             style={{
+              fontFamily: 'var(--font-space-mono), monospace',
               fontSize: 8,
               letterSpacing: '0.25em',
               textTransform: 'uppercase',
-              marginTop: 40,
+              marginTop: 44,
             }}
           >
             froot.fit
