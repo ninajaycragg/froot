@@ -8,6 +8,7 @@ import BraStyleIcon from './BraStyleIcon'
 import FrootChat from './FrootChat'
 import FrootProfileCard from './FrootProfileCard'
 import FitFeedbackModal from './FitFeedbackModal'
+import ShockCard from './ShockCard'
 import { useProfile } from './FrootProfileContext'
 import { goalAffinity, getLookDescription } from './lookDescriptions'
 import type { SizeResult, Measurements, ShapeProfile, AestheticGoal } from './sizing'
@@ -278,6 +279,13 @@ export default function FrootResults({
       display: 'flex', flexDirection: 'column', alignItems: 'center',
       padding: '100px 24px 80px', minHeight: '100vh',
     }}>
+
+      {/* ═══════════ SHOCK CARD — the viral moment ═══════════ */}
+      <ShockCard
+        result={result}
+        measurements={measurements}
+        oldSize={fitCheckData?.currentSize}
+      />
 
       {/* ═══════════ SECTION 1: The Reveal ═══════════ */}
       <motion.div
