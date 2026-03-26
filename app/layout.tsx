@@ -25,6 +25,7 @@ export const viewport: Viewport = {
 }
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://froot.fit'),
   title: 'froot — find your real size',
   description: 'A bra sizing tool that actually works. 6 measurements, shape-aware algorithm, 265K+ data points.',
   openGraph: {
