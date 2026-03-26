@@ -10,6 +10,7 @@ import brandMeta from '@/data/brand-meta.json'
 import communityInsights from '@/data/community-insights.json'
 import fitDiagnostics from '@/data/fit-diagnostics.json'
 import sizeTransitions from '@/data/size-transitions.json'
+import stories from '@/data/stories.json'
 
 // ── Style data (loaded at runtime to avoid huge bundle) ──
 let styleData: Record<string, StyleEntry> | null = null
@@ -357,6 +358,35 @@ function getTransitionStats(bandSize: number, cupIndex: number) {
   }
 }
 
+// ── Community stories ──
+
+interface StoryJourney {
+  from: string | null
+  to: string | null
+  quote: string
+  title: string
+  emotion: number
+  brands: string[]
+  shapes: string[]
+}
+
+interface StoryQuote {
+  text: string
+  emotion: number
+  shapes: string[]
+}
+
+interface BucketStories {
+  journeys: StoryJourney[]
+  quotes: StoryQuote[]
+  brandStories: Record<string, { quote: string; sizes: string[] }[]>
+}
+
+function getStories(bucket: string): BucketStories | null {
+  const allStories = stories as Record<string, BucketStories>
+  return allStories[bucket] || null
+}
+
 // ── Main handler ──
 
 export async function POST(req: Request) {
@@ -492,6 +522,7 @@ export async function POST(req: Request) {
       cupWidth: currentBraMeasurements.cw,
       wireLength: currentBraMeasurements.wl || 0,
     } : null,
+    stories: getStories(community.bucket),
   }
 
   // ── Claude layer ──

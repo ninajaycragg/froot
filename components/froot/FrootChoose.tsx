@@ -33,6 +33,12 @@ const PATHS = [
     title: 'Translate my size',
     desc: 'find your match across 1,400+ styles',
   },
+  {
+    key: 'lookup' as const,
+    number: '04',
+    title: 'What\u2019s my size in this?',
+    desc: 'look up your size in a specific brand or style',
+  },
 ]
 
 const PROOF_STATS = [
@@ -48,6 +54,7 @@ export default function FrootChoose({ unit, onUnitChange, onMeasure, onFitCheck,
     measure: onMeasure,
     fitcheck: onFitCheck,
     convert: onConvert,
+    lookup: () => { window.location.href = '/lookup' },
   }
 
   return (

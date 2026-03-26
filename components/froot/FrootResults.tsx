@@ -9,6 +9,9 @@ import FrootChat from './FrootChat'
 import FrootProfileCard from './FrootProfileCard'
 import FitFeedbackModal from './FitFeedbackModal'
 import ShockCard from './ShockCard'
+import PeopleLikeYou from './PeopleLikeYou'
+import BrandSocialProof from './BrandSocialProof'
+import TransitionFlow from './TransitionFlow'
 import { useProfile } from './FrootProfileContext'
 import { goalAffinity, getLookDescription } from './lookDescriptions'
 import type { SizeResult, Measurements, ShapeProfile, AestheticGoal } from './sizing'
@@ -38,6 +41,28 @@ interface StyleMatchData {
   communityDetail?: CommunityDetail | null
 }
 
+interface StoryJourney {
+  from: string | null
+  to: string | null
+  quote: string
+  title: string
+  emotion: number
+  brands: string[]
+  shapes: string[]
+}
+
+interface StoryQuote {
+  text: string
+  emotion: number
+  shapes: string[]
+}
+
+interface StoriesData {
+  journeys: StoryJourney[]
+  quotes: StoryQuote[]
+  brandStories: Record<string, { quote: string; sizes: string[] }[]>
+}
+
 interface DataContext {
   targetMeasurements?: { cupDepth: number; cupWidth: number; wireLength: number } | null
   styleMatches: StyleMatchData[]
@@ -53,6 +78,7 @@ interface DataContext {
     cupWidth: number
     wireLength: number
   } | null
+  stories?: StoriesData | null
 }
 
 interface ClaudeAdvice {
@@ -90,6 +116,18 @@ const LOADING_MESSAGES = [
 ]
 
 const EASE: [number, number, number, number] = [0.16, 1, 0.3, 1]
+
+/** Append ?ref=froot (or &ref=froot) tracking param to a URL */
+function withRef(url: string): string {
+  try {
+    const u = new URL(url)
+    u.searchParams.set('ref', 'froot')
+    return u.toString()
+  } catch {
+    // Relative or malformed URL — simple fallback
+    return url + (url.includes('?') ? '&' : '?') + 'ref=froot'
+  }
+}
 
 export default function FrootResults({
   result,
@@ -351,6 +389,16 @@ export default function FrootResults({
         </motion.p>
       </motion.div>
 
+      {/* ═══════════ PEOPLE LIKE YOU — real stories ═══════════ */}
+      {dataCtx?.stories && (
+        <PeopleLikeYou
+          journeys={dataCtx.stories.journeys}
+          quotes={dataCtx.stories.quotes}
+          sizeRange={dataCtx.sizeRange}
+          totalMentions={dataCtx.communityMentions as number}
+          oldSize={fitCheckData?.currentSize}
+        />
+      )}
 
       {/* ═══════════ SECTION 2: Top Pick — THE hero card ═══════════ */}
       {topMatch && (
@@ -436,6 +484,15 @@ export default function FrootResults({
                     </span>
                   ))}
                 </div>
+
+                {/* Brand social proof — real quote */}
+                {dataCtx?.stories?.brandStories && (
+                  <BrandSocialProof
+                    brand={topMatch.brand}
+                    brandStories={dataCtx.stories.brandStories}
+                    communityScore={topMatch.communityScore}
+                  />
+                )}
 
                 {/* Community deep-dive toggle */}
                 {topMatch.communityDetail && (
@@ -570,7 +627,7 @@ export default function FrootResults({
             {/* Big CTA */}
             <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
               {topMatch.url && (
-                <a href={topMatch.url} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', flex: 1 }}>
+                <a href={withRef(topMatch.url)} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', flex: 1 }}>
                   <motion.div
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
@@ -710,7 +767,7 @@ export default function FrootResults({
                           </button>
                         )}
                         {s.url && (
-                          <a href={s.url} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
+                          <a href={withRef(s.url)} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
                             <span style={{
                               fontFamily: 'var(--font-space-mono)', fontSize: '9px', letterSpacing: '0.1em',
                               textTransform: 'uppercase', color: '#D4A020', flexShrink: 0,
@@ -721,6 +778,19 @@ export default function FrootResults({
                               shop &#8599;
                             </span>
                           </a>
+                        )}
+                        {profile && (
+                          <button
+                            onClick={() => setFeedbackTarget({ brand: s.brand, style: s.style, size: s.bestSize })}
+                            style={{
+                              fontFamily: 'var(--font-space-mono)', fontSize: '8px',
+                              color: 'rgba(26,8,8,0.25)', background: 'rgba(26,8,8,0.03)',
+                              border: 'none', borderRadius: '10px', padding: '5px 10px',
+                              cursor: 'pointer', transition: 'all 0.2s ease', whiteSpace: 'nowrap',
+                            }}
+                          >
+                            rate fit
+                          </button>
                         )}
                       </div>
                     </div>
@@ -807,6 +877,14 @@ export default function FrootResults({
                               </button>
                             )}
                           </div>
+                          {/* Brand quote in expanded panel */}
+                          {dataCtx?.stories?.brandStories && (
+                            <BrandSocialProof
+                              brand={s.brand}
+                              brandStories={dataCtx.stories.brandStories}
+                              communityScore={s.communityScore}
+                            />
+                          )}
                         </div>
                       </motion.div>
                     )}
@@ -841,6 +919,15 @@ export default function FrootResults({
         </motion.div>
       )}
 
+      {/* ═══════════ TRANSITION FLOW — size journey visualization ═══════════ */}
+      {dataCtx && (
+        <TransitionFlow
+          transitionStats={dataCtx.transitionStats}
+          journeys={dataCtx.stories?.journeys || []}
+          targetSize={`${result.bandSize}${result.sizeUK?.replace(/\d+/, '') || 'D'}`}
+          sizeRange={dataCtx.sizeRange}
+        />
+      )}
 
       {/* ═══════════ SECTION 4: Shape + Details — collapsible ═══════════ */}
       <motion.div
@@ -1022,6 +1109,23 @@ export default function FrootResults({
             Start over
           </motion.button>
         </div>
+
+        <a
+          href="/lookup"
+          style={{
+            fontFamily: 'var(--font-space-mono)', fontSize: '10px',
+            color: 'rgba(26,8,8,0.3)',
+            letterSpacing: '0.04em',
+            borderBottom: '1px solid rgba(26,8,8,0.1)',
+            paddingBottom: '2px',
+            textDecoration: 'none',
+            transition: 'color 0.2s ease',
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.color = 'rgba(26,8,8,0.55)'}
+          onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(26,8,8,0.3)'}
+        >
+          what&apos;s my size in a specific brand? &rarr;
+        </a>
 
         <p style={{
           fontFamily: 'var(--font-space-mono)', fontSize: '8px', color: 'rgba(26,8,8,0.12)',
