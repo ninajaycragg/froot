@@ -28,7 +28,6 @@ html, body {
 
 body {
   font-family: var(--font-space-mono), "Courier New", monospace;
-  overflow: hidden;
   overscroll-behavior: none;
   -webkit-overflow-scrolling: touch;
 }

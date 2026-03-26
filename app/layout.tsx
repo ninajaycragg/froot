@@ -25,13 +25,11 @@ export const viewport: Viewport = {
 }
 
 export const metadata: Metadata = {
-  title: 'Froot — Find your real bra size',
-  description: 'The bra fitting calculator that actually works. 6 measurements, real data from 265K+ bras, AI-powered recommendations.',
+  title: 'froot — find your real size',
+  description: 'A bra sizing tool that actually works. 6 measurements, shape-aware algorithm, 265K+ data points.',
   openGraph: {
-    title: 'Froot — Find your real bra size',
-    description: 'The bra fitting calculator that actually works. 6 measurements, real data from 265K+ bras, AI-powered recommendations.',
-    url: 'https://froot.fit',
-    siteName: 'froot.fit',
+    title: 'froot — find your real size',
+    description: 'A bra sizing tool that actually works. 6 measurements, shape-aware algorithm, 265K+ data points.',
   },
 }
 

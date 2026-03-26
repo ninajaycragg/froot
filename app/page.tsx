@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
+import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import FilmGrain from '@/components/FilmGrain'
 import FrootChoose from '@/components/froot/FrootChoose'
@@ -438,14 +439,14 @@ export default function FrootPage() {
             &larr; back
           </motion.button>
         ) : (
-          <span style={{
+          <Link href="/" style={{
             fontSize: '9px',
             letterSpacing: '0.22em',
             color: 'rgba(26,8,8,0.3)',
             textTransform: 'uppercase',
           }}>
-            froot.fit
-          </span>
+            &larr; ninas.ai
+          </Link>
         )}
 
         {showProgress ? (
