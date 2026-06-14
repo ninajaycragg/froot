@@ -12,6 +12,12 @@ interface FitFeedbackModalProps {
   size: string
   open: boolean
   onClose: () => void
+  /**
+   * When true, the modal lets the user type the brand / style / size of a bra
+   * they own (seeded from the props as defaults). Used by the "add a bra you
+   * own" shelf, where the bra isn't a pre-known recommendation.
+   */
+  manualEntry?: boolean
 }
 
 const RATINGS = [
@@ -33,7 +39,7 @@ const CUP_OPTIONS = [
   { value: 'too_big', label: 'Too big' },
 ]
 
-export default function FitFeedbackModal({ brand, style, size, open, onClose }: FitFeedbackModalProps) {
+export default function FitFeedbackModal({ brand, style, size, open, onClose, manualEntry }: FitFeedbackModalProps) {
   const { submitFeedback } = useProfile()
   const [rating, setRating] = useState<typeof RATINGS[number]['value'] | null>(null)
   const [bandFit, setBandFit] = useState<string | null>(null)
@@ -42,13 +48,25 @@ export default function FitFeedbackModal({ brand, style, size, open, onClose }: 
   const [submitting, setSubmitting] = useState(false)
   const [done, setDone] = useState(false)
 
-  const styleName = style.replace(/\s*\([^)]*\)\s*$/, '')
+  // Manual-entry fields (owned-bra add flow), seeded from props as defaults.
+  const [brandInput, setBrandInput] = useState(brand)
+  const [styleInput, setStyleInput] = useState(style)
+  const [sizeInput, setSizeInput] = useState(size)
+
+  const effBrand = manualEntry ? brandInput.trim() : brand
+  const effStyle = manualEntry ? styleInput.trim() : style
+  const effSize = manualEntry ? sizeInput.trim() : size
+  const styleName = effStyle.replace(/\s*\([^)]*\)\s*$/, '')
+  const manualReady = !manualEntry || (!!effBrand && !!effSize)
 
   async function handleSubmit() {
-    if (!rating || submitting) return
+    if (!rating || submitting || !manualReady) return
     setSubmitting(true)
     const success = await submitFeedback({
-      brand, style, size, rating,
+      brand: effBrand,
+      style: effStyle || effBrand,
+      size: effSize,
+      rating,
       bandFit: bandFit || undefined,
       cupFit: cupFit || undefined,
       notes: notes.trim() || undefined,
@@ -99,14 +117,16 @@ export default function FitFeedbackModal({ brand, style, size, open, onClose }: 
                       fontFamily: 'var(--font-dm-serif)', fontStyle: 'italic',
                       fontSize: '18px', color: '#1A0808', marginBottom: '4px',
                     }}>
-                      How did it fit?
+                      {manualEntry ? 'Add a bra you own' : 'How did it fit?'}
                     </p>
-                    <p style={{
-                      fontFamily: 'var(--font-space-mono)', fontSize: '10px',
-                      color: 'rgba(26,8,8,0.35)',
-                    }}>
-                      {brand} {styleName} &middot; {size}
-                    </p>
+                    {!manualEntry && (
+                      <p style={{
+                        fontFamily: 'var(--font-space-mono)', fontSize: '10px',
+                        color: 'rgba(26,8,8,0.35)',
+                      }}>
+                        {brand} {styleName} &middot; {size}
+                      </p>
+                    )}
                   </div>
                   <button
                     onClick={onClose}
@@ -119,6 +139,44 @@ export default function FitFeedbackModal({ brand, style, size, open, onClose }: 
                     &times;
                   </button>
                 </div>
+
+                {/* Manual-entry: which bra? (owned-bra add flow) */}
+                {manualEntry && (
+                  <div style={{ marginBottom: '20px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <input
+                      value={brandInput}
+                      onChange={(e) => setBrandInput(e.target.value)}
+                      placeholder="brand (e.g. Freya)"
+                      style={{
+                        width: '100%', padding: '11px 12px', borderRadius: '10px', border: 'none',
+                        background: 'rgba(26,8,8,0.02)', boxShadow: '0 1px 3px rgba(26,8,8,0.04) inset',
+                        fontFamily: 'var(--font-space-mono)', fontSize: '11px', color: '#1A0808', outline: 'none',
+                      }}
+                    />
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <input
+                        value={styleInput}
+                        onChange={(e) => setStyleInput(e.target.value)}
+                        placeholder="style (optional)"
+                        style={{
+                          flex: 2, minWidth: 0, padding: '11px 12px', borderRadius: '10px', border: 'none',
+                          background: 'rgba(26,8,8,0.02)', boxShadow: '0 1px 3px rgba(26,8,8,0.04) inset',
+                          fontFamily: 'var(--font-space-mono)', fontSize: '11px', color: '#1A0808', outline: 'none',
+                        }}
+                      />
+                      <input
+                        value={sizeInput}
+                        onChange={(e) => setSizeInput(e.target.value)}
+                        placeholder="size"
+                        style={{
+                          flex: 1, minWidth: 0, padding: '11px 12px', borderRadius: '10px', border: 'none',
+                          background: 'rgba(26,8,8,0.02)', boxShadow: '0 1px 3px rgba(26,8,8,0.04) inset',
+                          fontFamily: 'var(--font-space-mono)', fontSize: '11px', color: '#1A0808', outline: 'none',
+                        }}
+                      />
+                    </div>
+                  </div>
+                )}
 
                 {/* Overall rating */}
                 <div style={{ marginBottom: '20px' }}>
@@ -276,19 +334,19 @@ export default function FitFeedbackModal({ brand, style, size, open, onClose }: 
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={handleSubmit}
-                    disabled={submitting}
+                    disabled={submitting || !manualReady}
                     style={{
                       width: '100%', padding: '14px',
                       borderRadius: '14px', border: 'none',
-                      background: submitting ? 'rgba(212,160,32,0.4)' : '#D4A020',
+                      background: (submitting || !manualReady) ? 'rgba(212,160,32,0.4)' : '#D4A020',
                       color: '#FAF6EE',
                       fontFamily: 'var(--font-space-mono)', fontSize: '11px',
                       letterSpacing: '0.12em', textTransform: 'uppercase',
-                      cursor: submitting ? 'default' : 'pointer',
+                      cursor: (submitting || !manualReady) ? 'default' : 'pointer',
                       transition: 'all 0.2s ease',
                     }}
                   >
-                    {submitting ? 'Saving...' : 'Submit review'}
+                    {submitting ? 'Saving...' : manualEntry ? 'Save this bra' : 'Submit review'}
                   </motion.button>
                 )}
               </>

@@ -1,0 +1,147 @@
+{
+  "_about": "Six realistic example outputs from scripts/tag-bras.mjs (the VLM bra-tagger, model claude-sonnet-4-6). Each row is the schema-valid tag object plus a _meta block keyed by the SAME 'Brand|Style (id)' key the geometry uses in data/style-measurements.json, so the construction fingerprint joins trivially onto the fit fingerprint. Where %elastane was scrapeable (Curvy Kate / Freya / Panache /products.json — see notes/froot-lab/data-frontier.md), stretch_refined shows the fused value. See scripts/tag-bras.README.md.",
+  "tags": [
+    {
+      "is_bra_product_photo": true,
+      "cup_construction": { "value": "foam", "confidence": 0.92 },
+      "coverage": { "value": "plunge", "confidence": 0.84 },
+      "material": { "value": "microfiber", "confidence": 0.9 },
+      "secondary_materials": [],
+      "wire": { "value": "underwire", "confidence": 0.95 },
+      "wire_width": { "value": "wide", "confidence": 0.6 },
+      "stretch_estimate": { "value": "rigid", "confidence": 0.65 },
+      "support_level": { "value": "medium", "confidence": 0.8 },
+      "notes": "Classic smooth T-shirt bra. wire_width wide vs narrow inferred from gore depth — partly hidden.",
+      "_meta": {
+        "model": "claude-sonnet-4-6",
+        "image": "https://www.bratabase.com/photos/wacoal-red-carpet-strapless.jpg",
+        "style_key": "Wacoal|Red Carpet Strapless (5208)",
+        "tagged_at": "2026-06-14T17:40:02.000Z"
+      },
+      "stretch_refined": {
+        "value": "rigid",
+        "scalar": 0.18,
+        "confidence": 0.9,
+        "source": "elastane+vision",
+        "elastane_pct": 4
+      }
+    },
+    {
+      "is_bra_product_photo": true,
+      "cup_construction": { "value": "seamed", "confidence": 0.88 },
+      "coverage": { "value": "full", "confidence": 0.82 },
+      "material": { "value": "lace", "confidence": 0.93 },
+      "secondary_materials": ["mesh"],
+      "wire": { "value": "underwire", "confidence": 0.91 },
+      "wire_width": { "value": "narrow", "confidence": 0.72 },
+      "stretch_estimate": { "value": "moderate", "confidence": 0.5 },
+      "support_level": { "value": "high", "confidence": 0.82 },
+      "notes": "Three-panel full-bust construction; seams dominate the sheer single-layer lace, so seamed over unlined.",
+      "_meta": {
+        "model": "claude-sonnet-4-6",
+        "image": "https://www.bratabase.com/photos/freya-fancies-balcony.jpg",
+        "style_key": "Freya|Fancies Balcony (1015)",
+        "tagged_at": "2026-06-14T17:40:05.000Z"
+      },
+      "stretch_refined": {
+        "value": "moderate",
+        "scalar": 0.45,
+        "confidence": 0.9,
+        "source": "elastane+vision",
+        "elastane_pct": 9
+      }
+    },
+    {
+      "is_bra_product_photo": true,
+      "cup_construction": { "value": "molded", "confidence": 0.86 },
+      "coverage": { "value": "balconette", "confidence": 0.74 },
+      "material": { "value": "microfiber", "confidence": 0.82 },
+      "secondary_materials": ["lace"],
+      "wire": { "value": "underwire", "confidence": 0.93 },
+      "wire_width": { "value": "wide", "confidence": 0.66 },
+      "stretch_estimate": { "value": "rigid", "confidence": 0.6 },
+      "support_level": { "value": "high", "confidence": 0.76 },
+      "notes": "Smooth seamless dome with a lace top trim — molded over foam since padding isn't the defining feature.",
+      "_meta": {
+        "model": "claude-sonnet-4-6",
+        "image": "./photos/panache-cleo-marcie.jpg",
+        "style_key": "Cleo by Panache|Marcie Balconette (6431)",
+        "tagged_at": "2026-06-14T17:40:08.000Z"
+      },
+      "stretch_refined": {
+        "value": "moderate",
+        "scalar": 0.45,
+        "confidence": 0.9,
+        "source": "elastane+vision",
+        "elastane_pct": 10
+      }
+    },
+    {
+      "is_bra_product_photo": true,
+      "cup_construction": { "value": "unlined", "confidence": 0.79 },
+      "coverage": { "value": "demi", "confidence": 0.52 },
+      "material": { "value": "cotton", "confidence": 0.77 },
+      "secondary_materials": [],
+      "wire": { "value": "wireless", "confidence": 0.94 },
+      "wire_width": { "value": "n/a", "confidence": 1.0 },
+      "stretch_estimate": { "value": "stretchy", "confidence": 0.68 },
+      "support_level": { "value": "low", "confidence": 0.85 },
+      "notes": "Pull-on ribbed-knit bralette, soft triangle. Coverage low-confidence — reads between demi and full by fit.",
+      "_meta": {
+        "model": "claude-sonnet-4-6",
+        "image": "./photos/pepper-all-you-bralette.jpg",
+        "style_key": "Pepper|All You Bralette (8820)",
+        "tagged_at": "2026-06-14T17:40:11.000Z"
+      },
+      "stretch_refined": {
+        "value": "stretchy",
+        "scalar": 0.82,
+        "confidence": 0.9,
+        "source": "elastane+vision",
+        "elastane_pct": 16
+      }
+    },
+    {
+      "is_bra_product_photo": true,
+      "cup_construction": { "value": "seamed", "confidence": 0.7 },
+      "coverage": { "value": "full", "confidence": 0.58 },
+      "material": { "value": "mesh", "confidence": 0.8 },
+      "secondary_materials": ["microfiber"],
+      "wire": { "value": "underwire", "confidence": 0.55 },
+      "wire_width": { "value": "narrow", "confidence": 0.4 },
+      "stretch_estimate": { "value": "moderate", "confidence": 0.45 },
+      "support_level": { "value": "medium", "confidence": 0.5 },
+      "notes": "Three-quarter front crop hides the band back and gore — wire and width are inferred, hence low confidence.",
+      "_meta": {
+        "model": "claude-sonnet-4-6",
+        "image": "https://www.bratabase.com/photos/panache-sport-wired-sports-bra.jpg",
+        "style_key": "Panache|Sport Wired Sports Bra (5021)",
+        "tagged_at": "2026-06-14T17:40:14.000Z"
+      },
+      "stretch_refined": {
+        "value": "moderate",
+        "scalar": 0.5,
+        "confidence": 0.45,
+        "source": "vision"
+      }
+    },
+    {
+      "is_bra_product_photo": false,
+      "cup_construction": { "value": "molded", "confidence": 0.0 },
+      "coverage": { "value": "full", "confidence": 0.0 },
+      "material": { "value": "microfiber", "confidence": 0.0 },
+      "secondary_materials": [],
+      "wire": { "value": "underwire", "confidence": 0.0 },
+      "wire_width": { "value": "n/a", "confidence": 0.0 },
+      "stretch_estimate": { "value": "moderate", "confidence": 0.0 },
+      "support_level": { "value": "medium", "confidence": 0.0 },
+      "notes": "Not a bra product photo — this is a one-piece swimsuit on a model. All tags zero-confidence; route to review, do not fuse.",
+      "_meta": {
+        "model": "claude-sonnet-4-6",
+        "image": "./photos/mystery-listing-4471.jpg",
+        "style_key": "Unknown|Listing 4471 (4471)",
+        "tagged_at": "2026-06-14T17:40:17.000Z"
+      }
+    }
+  ]
+}

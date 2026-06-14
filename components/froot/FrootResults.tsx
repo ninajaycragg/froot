@@ -8,6 +8,9 @@ import BraStyleIcon from './BraStyleIcon'
 import FrootChat from './FrootChat'
 import FrootProfileCard from './FrootProfileCard'
 import FitFeedbackModal from './FitFeedbackModal'
+import RefinedSizeCard from './RefinedSizeCard'
+import BraShelf from './BraShelf'
+import BraRunsBadge from './BraRunsBadge'
 import ShockCard from './ShockCard'
 import PeopleLikeYou from './PeopleLikeYou'
 import BrandSocialProof from './BrandSocialProof'
@@ -147,6 +150,8 @@ export default function FrootResults({
   const [showDetails, setShowDetails] = useState(false)
   const [expandedMatch, setExpandedMatch] = useState<number | null>(null)
   const [feedbackTarget, setFeedbackTarget] = useState<{ brand: string; style: string; size: string } | null>(null)
+  // Owned-bra add flow (manual entry) — separate from rating a recommended bra.
+  const [addBraOpen, setAddBraOpen] = useState(false)
   const { profile } = useProfile()
 
   // Legacy email capture state (kept for backward compat, hidden when profile card is shown)
@@ -389,6 +394,12 @@ export default function FrootResults({
         </motion.p>
       </motion.div>
 
+      {/* ═══════════ REFINED SIZE — sharpened by the bras you own ═══════════ */}
+      {/* The calculator answer stays above; this is the belief-engine refinement. */}
+      {profile?.refinedSize && profile.refinedSize.nPings >= 1 && (
+        <RefinedSizeCard refined={profile.refinedSize} />
+      )}
+
       {/* ═══════════ PEOPLE LIKE YOU — real stories ═══════════ */}
       {dataCtx?.stories && (
         <PeopleLikeYou
@@ -456,6 +467,8 @@ export default function FrootResults({
                       &#9829; {Math.round(topMatch.communityScore * 100)}% loved
                     </span>
                   )}
+                  {/* how this brand's sizing behaves, from community fit reports */}
+                  <BraRunsBadge brand={topMatch.brand} hideWhenEmpty />
                 </div>
                 {/* What this does for you — the visual hook */}
                 <p style={{
@@ -1043,6 +1056,22 @@ export default function FrootResults({
       </motion.div>
 
 
+      {/* ═══════════ OWNED-BRA SHELF — the readings that sharpen the size ═══════════ */}
+      {profile && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.1, duration: 0.4 }}
+          style={{ maxWidth: '480px', width: '100%', marginBottom: '24px' }}
+        >
+          <BraShelf
+            feedback={profile.fitFeedback ?? []}
+            nPings={profile.refinedSize?.nPings}
+            onAddBra={() => setAddBraOpen(true)}
+          />
+        </motion.div>
+      )}
+
       {/* ═══════════ PROFILE / SIZE PASSPORT ═══════════ */}
       <motion.div
         initial={{ opacity: 0 }}
@@ -1143,6 +1172,18 @@ export default function FrootResults({
           size={feedbackTarget.size}
           open={true}
           onClose={() => setFeedbackTarget(null)}
+        />
+      )}
+
+      {/* ═══════════ ADD-A-BRA-YOU-OWN MODAL (manual entry) ═══════════ */}
+      {addBraOpen && profile && (
+        <FitFeedbackModal
+          brand=""
+          style=""
+          size={result.sizeUK}
+          open={true}
+          manualEntry
+          onClose={() => setAddBraOpen(false)}
         />
       )}
 

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getCurrentProfile, updateProfile, createMagicToken, destroySession } from '@/lib/froot-auth'
+import { refineSizeFromFeedback } from '@/components/froot/beliefEngine'
 import { Resend } from 'resend'
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
@@ -10,6 +11,11 @@ export async function GET() {
   if (!profile) {
     return NextResponse.json({ profile: null })
   }
+
+  // "Fit is radar": fold every owned-bra rating into a sharpened size belief.
+  // Refines the calculator's sizeUK; gets stronger with each bra she's rated
+  // (proven to beat a one-shot calculator from the 2nd owned bra on).
+  const refinedSize = refineSizeFromFeedback(profile.fitFeedback ?? [], profile.sizeUK)
 
   return NextResponse.json({
     profile: {
@@ -23,6 +29,7 @@ export async function GET() {
       measurements: profile.measurements,
       savedMatches: profile.savedMatches,
       fitFeedback: profile.fitFeedback,
+      refinedSize,
       createdAt: profile.createdAt,
     },
   })

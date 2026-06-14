@@ -1,6 +1,7 @@
 'use client'
 
 import { createContext, useContext, useState, useEffect, useCallback } from 'react'
+import type { RefinedSize } from './beliefEngine'
 
 interface SavedMatch {
   brand: string
@@ -33,6 +34,7 @@ export interface FrootProfile {
   measurements?: Record<string, number | string>
   savedMatches?: SavedMatch[]
   fitFeedback?: FitFeedback[]
+  refinedSize?: RefinedSize | null // belief-engine size, sharpened by owned-bra ratings
   createdAt: string
 }
 
