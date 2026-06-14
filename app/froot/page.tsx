@@ -450,15 +450,29 @@ export default function FrootPage() {
 
         {showProgress ? (
           <FrootProgress current={step} total={totalSteps} />
+        ) : mode === 'choose' ? (
+          <a
+            href="/froot/lab"
+            style={{
+              fontSize: '9px',
+              letterSpacing: '0.15em',
+              color: 'rgba(26,8,8,0.3)',
+              textTransform: 'uppercase',
+              textDecoration: 'none',
+              transition: 'color 0.2s ease',
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = 'rgba(197,53,44,0.8)')}
+            onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(26,8,8,0.3)')}
+          >
+            the fit lab &rarr;
+          </a>
         ) : (
           <span style={{
             fontSize: '9px',
             letterSpacing: '0.15em',
             color: 'rgba(26,8,8,0.2)',
             textTransform: 'uppercase',
-          }}>
-            {mode === 'choose' ? 'froot' : ''}
-          </span>
+          }} />
         )}
       </nav>
 
