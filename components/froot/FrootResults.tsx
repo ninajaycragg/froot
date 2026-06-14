@@ -13,9 +13,12 @@ import BraShelf from './BraShelf'
 import BraRunsBadge from './BraRunsBadge'
 import ShockCard from './ShockCard'
 import PeopleLikeYou from './PeopleLikeYou'
+import FitTwinsPanel from './FitTwinsPanel'
+import MaterialChip from './MaterialChip'
 import BrandSocialProof from './BrandSocialProof'
 import TransitionFlow from './TransitionFlow'
 import { useProfile } from './FrootProfileContext'
+import { fitTwinsFor, fitTwinBucket } from '@/lib/fitTwins'
 import { goalAffinity, getLookDescription } from './lookDescriptions'
 import type { SizeResult, Measurements, ShapeProfile, AestheticGoal } from './sizing'
 
@@ -204,6 +207,24 @@ export default function FrootResults({
   }
 
   const dataCtx = advice?.dataContext
+
+  // ── Fit twins — "people built like you converged on these bras" ──
+  // Derive the single most distinctive shape key the recsys leans on:
+  // projection (projected/shallow) reads strongest; else fall back to root width.
+  const twins = useMemo(() => {
+    const shapeKey =
+      shapeProfile.projection === 'projected' ? 'projected'
+      : shapeProfile.projection === 'shallow' ? 'shallow'
+      : shapeProfile.rootWidth === 'narrow' ? 'narrow_root'
+      : shapeProfile.rootWidth === 'wide' ? 'wide_root'
+      : null
+    return fitTwinsFor({ band: result.bandSize, cupIndex: result.cupIndex, shape: shapeKey }, 6)
+  }, [result.bandSize, result.cupIndex, shapeProfile])
+
+  const twinsBucket = useMemo(
+    () => fitTwinBucket({ band: result.bandSize, cupIndex: result.cupIndex }),
+    [result.bandSize, result.cupIndex],
+  )
 
   // Tag filtering
   const allTags = useMemo(() => {
@@ -411,6 +432,13 @@ export default function FrootResults({
         />
       )}
 
+      {/* ═══════════ FIT TWINS — the bras people built like you kept ═══════════ */}
+      {/* The collaborative-filtering payoff: PeopleLikeYou is the story wall, this
+          is the ranked shortlist distilled from the same neighborhood's fit reports. */}
+      {twins.length > 0 && (
+        <FitTwinsPanel twins={twins} size={result.sizeUK} bucket={twinsBucket} />
+      )}
+
       {/* ═══════════ SECTION 2: Top Pick — THE hero card ═══════════ */}
       {topMatch && (
         <motion.div
@@ -469,6 +497,8 @@ export default function FrootResults({
                   )}
                   {/* how this brand's sizing behaves, from community fit reports */}
                   <BraRunsBadge brand={topMatch.brand} hideWhenEmpty />
+                  {/* fabric / stretch fingerprint from the material tower */}
+                  <MaterialChip brand={topMatch.brand} style={topMatch.style} hideWhenEmpty />
                 </div>
                 {/* What this does for you — the visual hook */}
                 <p style={{
@@ -757,6 +787,7 @@ export default function FrootResults({
                                 &#9829; {Math.round(s.communityScore * 100)}%
                               </span>
                             )}
+                            <MaterialChip brand={s.brand} style={s.style} hideWhenEmpty />
                           </div>
                           <p style={{ fontFamily: 'var(--font-space-mono)', fontSize: '9px', color: 'rgba(212,160,32,0.7)', marginTop: '3px', fontStyle: 'italic' }}>
                             {getLookDescription(s.tags, aestheticGoal, shapeProfile)}

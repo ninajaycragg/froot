@@ -1,6 +1,7 @@
 'use client'
 
 import { motion, AnimatePresence } from 'framer-motion'
+import BraRunsBadge from './BraRunsBadge'
 
 const EASE: [number, number, number, number] = [0.16, 1, 0.3, 1]
 
@@ -176,12 +177,18 @@ export default function BraShelf({ feedback, onAddBra, nPings }: BraShelfProps) 
                     }}>
                       {b.brand}{styleName ? <span style={{ color: 'rgba(26,8,8,0.4)' }}> · {styleName}</span> : null}
                     </p>
-                    <p style={{
-                      fontFamily: 'var(--font-space-mono)', fontSize: '9px',
-                      letterSpacing: '0.08em', color: 'rgba(26,8,8,0.35)',
-                    }}>
-                      {b.size}
-                    </p>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                      <p style={{
+                        fontFamily: 'var(--font-space-mono)', fontSize: '9px',
+                        letterSpacing: '0.08em', color: 'rgba(26,8,8,0.35)',
+                      }}>
+                        {b.size}
+                      </p>
+                      {/* brand sizing personality — now that brands are catalog-canonical */}
+                      <span style={{ display: 'inline-flex', transform: 'scale(0.82)', transformOrigin: 'left center' }}>
+                        <BraRunsBadge brand={b.brand} hideWhenEmpty />
+                      </span>
+                    </div>
                   </div>
                   <span style={{
                     flexShrink: 0,

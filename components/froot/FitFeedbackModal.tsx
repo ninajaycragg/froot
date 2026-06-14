@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useProfile } from './FrootProfileContext'
+import BrandAutocomplete from './BrandAutocomplete'
 
 const EASE: [number, number, number, number] = [0.16, 1, 0.3, 1]
 
@@ -143,15 +144,11 @@ export default function FitFeedbackModal({ brand, style, size, open, onClose, ma
                 {/* Manual-entry: which bra? (owned-bra add flow) */}
                 {manualEntry && (
                   <div style={{ marginBottom: '20px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    <input
+                    <BrandAutocomplete
                       value={brandInput}
-                      onChange={(e) => setBrandInput(e.target.value)}
+                      onChange={setBrandInput}
+                      onSelect={setBrandInput}
                       placeholder="brand (e.g. Freya)"
-                      style={{
-                        width: '100%', padding: '11px 12px', borderRadius: '10px', border: 'none',
-                        background: 'rgba(26,8,8,0.02)', boxShadow: '0 1px 3px rgba(26,8,8,0.04) inset',
-                        fontFamily: 'var(--font-space-mono)', fontSize: '11px', color: '#1A0808', outline: 'none',
-                      }}
                     />
                     <div style={{ display: 'flex', gap: '8px' }}>
                       <input
