@@ -12,6 +12,10 @@ import fitDiagnostics from '@/data/fit-diagnostics.json'
 import sizeTransitions from '@/data/size-transitions.json'
 import stories from '@/data/stories.json'
 
+// ── Twin-personalized ranking (additive layer over the base scorer) ──
+import { refineSizeFromFeedback, type RefinedSize, type FitFeedbackPing } from '@/components/froot/beliefEngine'
+import { personalScore, type Candidate, type TwinContext } from '@/lib/rankSignals'
+
 // ── Style data (loaded at runtime to avoid huge bundle) ──
 let styleData: Record<string, StyleEntry> | null = null
 
@@ -86,10 +90,32 @@ function getTargetMeasurements(bandSize: number, cupIndex: number): { cd: number
 
 // ── Style matching engine ──
 
+// ── Twin-personalized scoring (additive layer; see lib/rankSignals.ts) ──
+//
+// The base scorer below ranks every style from population-mean geometry + the
+// shape profile — the same ranking for everyone of a given size+shape. When the
+// request carries a person's owned-bra history, we layer FOUR personal signals
+// on top, all purely additive so the base behavior never regresses:
+//   1. BELIEF   — the belief engine sharpens her true band/cup from fitFeedback;
+//                 the target geometry is biased toward that belief (below, in the
+//                 POST handler), and candidates inside her belief range get a
+//                 bonus / drift penalty (rankSignals.beliefSignal).
+//   2. BRA-RUNS — each candidate's effective body size is de-biased by how its
+//                 brand runs (run-small → its label maps to a bigger body) before
+//                 the belief check (rankSignals, folded into beliefSignal).
+//   3. STRETCH  — stretchy styles get WIDER tolerance + a forgiveness bonus;
+//                 rigid styles must match more exactly (precision reward / loose
+//                 penalty) (rankSignals.stretchSignal).
+//   4. FEEDBACK — downrank styles/brands she rated 'bad'; uprank brands whose
+//                 neighbors she rated 'perfect' (rankSignals.feedbackSignal).
+// Tunable weights live at the top of lib/rankSignals.ts; every term is clamped
+// into the same 0.04–0.15 band the base bonuses use so none can dwarf
+// measurement proximity. `twin` is optional — pass null for the legacy ranking.
 function findMatchingStyles(
   bandSize: number,
   cupIndex: number,
   shape: { projection: string; fullness: string; rootWidth: string },
+  twin: TwinContext | null = null,
 ): StyleMatch[] {
   const styles = getStyleData()
   const ranges = brandRanges as Record<string, Record<string, number | string>>
@@ -153,10 +179,12 @@ function findMatchingStyles(
     // Score
     let score = 0.5
 
-    // Measurement proximity (max +0.25)
+    // Measurement proximity (max +0.25) — kept as a named value so the
+    // material-stretch signal can read "how close is this geometrically?"
     const cdDiff = Math.abs(cupDepth - target.cd)
     const cwDiff = Math.abs(cupWidth - target.cw)
-    score += Math.max(0.25 - (cdDiff * 0.05 + cwDiff * 0.03), 0)
+    const proximityBonus = Math.max(0.25 - (cdDiff * 0.05 + cwDiff * 0.03), 0)
+    score += proximityBonus
 
     // Projection scoring
     if (shape.projection === 'projected') {
@@ -186,6 +214,19 @@ function findMatchingStyles(
     const sampleCount = bestSize.data.n || 1
     if (sampleCount >= 10) score += 0.04
     if (sampleCount >= 30) score += 0.04
+
+    // ── Twin-personalized signals (additive; no-op when twin is null) ──
+    // belief + bra-runs de-bias + material stretch + owned-feedback memory.
+    if (twin) {
+      const candidate: Candidate = {
+        brand: entry.brand,
+        style: entry.style,
+        bestSize: bestSize.key,
+        cupIndex,
+        proximityBonus,
+      }
+      score += personalScore(candidate, twin)
+    }
 
     const brandUrl = metaData[entry.brand]?.url as string | undefined
 
@@ -432,16 +473,46 @@ export async function POST(req: Request) {
   const { measurements, sizeResult, shapeProfile, fitCheckData } = body
 
   const cupIndex = cupToIndex(sizeResult.sizeUK?.replace(/\d+/, '') || 'D')
-  const resolvedCupIndex = cupIndex >= 0 ? cupIndex : 4
+  const calcCupIndex = cupIndex >= 0 ? cupIndex : 4
 
-  // Layer 1: Style matching from measurement data
-  const topStyles = findMatchingStyles(sizeResult.bandSize, resolvedCupIndex, shapeProfile)
+  // ── Twin personalization seed ──
+  // If the request carries owned-bra fitFeedback (or a pre-computed refinedSize),
+  // build the belief and let it BIAS the search size toward the body she actually
+  // fits — not just the raw calculator size. Everything degrades to the legacy
+  // ranking when no history is present (refined stays null, twin is null).
+  const ownedFeedback: FitFeedbackPing[] = Array.isArray(body.fitFeedback) ? body.fitFeedback : []
+  const refined: RefinedSize | null =
+    (body.refinedSize as RefinedSize | null | undefined) ??
+    (ownedFeedback.length > 0 ? refineSizeFromFeedback(ownedFeedback, sizeResult.sizeUK) : null)
 
-  // Layer 2: Community insights
-  const community = getCommunityInsights(sizeResult.bandSize, resolvedCupIndex)
+  // Belief-biased target size: blend the calculator size with the sharpened
+  // belief, weighted by the belief's confidence (a shaky 1-ping belief barely
+  // moves it; a sharp multi-ping belief moves it most of the way). Round back to
+  // a real band (even) / cup index. This is what seeds getTargetMeasurements and
+  // the brand-range gate, so the whole search recenters on her belief.
+  let bandSize = sizeResult.bandSize
+  let resolvedCupIndex = calcCupIndex
+  if (refined && refined.nPings >= 1) {
+    const w = refined.confidence
+    const biasedBand = sizeResult.bandSize * (1 - w) + refined.bandSize * w
+    const biasedCup = calcCupIndex * (1 - w) + cupToIndex(refined.cupUK) * w
+    bandSize = Math.round(biasedBand / 2) * 2
+    const cupRounded = Math.round(biasedCup)
+    if (cupRounded >= 0 && cupRounded < UK_CUPS.length) resolvedCupIndex = cupRounded
+  }
+
+  const twin: TwinContext | null =
+    refined || ownedFeedback.length > 0 ? { refined, feedback: ownedFeedback } : null
+
+  // Layer 1: Style matching from measurement data (twin-personalized when present)
+  const topStyles = findMatchingStyles(bandSize, resolvedCupIndex, shapeProfile, twin)
+
+  // Layer 2: Community insights (on the belief-biased size, so the bucket,
+  // sentiment, and transitions all recenter on the body she actually fits)
+  const community = getCommunityInsights(bandSize, resolvedCupIndex)
 
   // Layer 3: Size transition context
-  const transitions = getTransitionStats(sizeResult.bandSize, resolvedCupIndex)
+  const transitions = getTransitionStats(bandSize, resolvedCupIndex)
 
   // Get community brand sentiment
   const communityBrands = community.data
@@ -465,7 +536,7 @@ export async function POST(req: Request) {
     if (brandSizeData) currentBraMeasurements = brandSizeData
   }
 
-  const targetMeasurements = getTargetMeasurements(sizeResult.bandSize, resolvedCupIndex)
+  const targetMeasurements = getTargetMeasurements(bandSize, resolvedCupIndex)
 
   // Shape mapping for community data
   const shapeKeys: string[] = []

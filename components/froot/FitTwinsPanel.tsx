@@ -14,6 +14,7 @@
 // ──────────────────────────────────────────────────────────────────────────
 
 import { motion } from 'framer-motion'
+import BuyButton from './BuyButton'
 
 export interface FitTwin {
   brand: string
@@ -250,6 +251,17 @@ export default function FitTwinsPanel({ twins, size, bucket }: FitTwinsPanelProp
                 >
                   {t.n}+ like you
                 </span>
+              </div>
+
+              {/* shop close — ghost pill; hides if a twin somehow has no brand */}
+              <div style={{ marginTop: 12 }}>
+                <BuyButton
+                  brand={t.brand}
+                  size={size}
+                  variant="ghost"
+                  source="fit-twins"
+                  hideWhenEmpty
+                />
               </div>
             </motion.div>
           )

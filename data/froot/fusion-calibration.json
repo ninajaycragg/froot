@@ -1,0 +1,286 @@
+{
+ "_about": "Calibration of the Fit Sim against REAL outcomes. We sweep the 3 free sim params and find the set whose label-size verdict best agrees with real size-transitions (people who sized up a cup should read as spill at their old label). Fit = 0.7·agreement + 0.3·normalized(spill↔cup-jump correlation). Community sentiment is a secondary cross-check, not part of the objective.",
+ "_generated_at": "2026-06-14T22:36:56.978Z",
+ "realSignal": {
+  "source": "data/size-transitions.json",
+  "transitionsUsed": 142,
+  "populationStats": {
+   "totalTransitions": 1134,
+   "uniquePairs": 989,
+   "avgBandChange": -0.4,
+   "avgCupChange": 1.6
+  },
+  "note": "avgCupChange +1.6, avgBandChange -0.4 — population sizes DOWN a band, UP a cup. A correct sim must reproduce this from geometry alone."
+ },
+ "baseline": {
+  "params": {
+   "give0": 2,
+   "givePerStretch": 12,
+   "spillScale": 1
+  },
+  "agreement": 0.8178,
+  "corr": 0.8558,
+  "fit": 0.8509,
+  "communityCorr": 0.2876
+ },
+ "recommended": {
+  "params": {
+   "give0": 2,
+   "givePerStretch": 12,
+   "spillScale": 0.8
+  },
+  "agreement": 0.8401,
+  "corr": 0.8558,
+  "fit": 0.8665,
+  "seatConfusion": {
+   "upSpill": 187,
+   "upNot": 7,
+   "downGap": 39,
+   "downNot": 3,
+   "sameSeat": 0,
+   "sameNot": 33
+  },
+  "communityCorr": 0.2787,
+  "communityBrands": 24
+ },
+ "improvement": {
+  "fitDelta": 0.0156,
+  "agreementDelta": 0.0223
+ },
+ "honest_limits": [
+  "No per-person mm ground truth exists; we calibrate to band/cup transition AGREEMENT + directional correlation, not to a measured gap/spill.",
+  "size-transitions are self-reported relabellings, noisy and survivorship-biased toward people who refit.",
+  "The twin per size is a population mean; individual shape variance is swept synthetically, not observed.",
+  "Community correlation is weak-signal (brand-level sentiment vs best-achievable fit) and is a sanity cross-check only."
+ ],
+ "grid": [
+  {
+   "params": {
+    "give0": 4,
+    "givePerStretch": 16,
+    "spillScale": 1
+   },
+   "agreement": 0.8401,
+   "corr": 0.86,
+   "fit": 0.8671,
+   "wTotal": 269,
+   "seatConf": {
+    "upSpill": 185,
+    "upNot": 9,
+    "downGap": 41,
+    "downNot": 1,
+    "sameSeat": 0,
+    "sameNot": 33
+   }
+  },
+  {
+   "params": {
+    "give0": 4,
+    "givePerStretch": 12,
+    "spillScale": 0.8
+   },
+   "agreement": 0.8401,
+   "corr": 0.859,
+   "fit": 0.867,
+   "wTotal": 269,
+   "seatConf": {
+    "upSpill": 185,
+    "upNot": 9,
+    "downGap": 41,
+    "downNot": 1,
+    "sameSeat": 0,
+    "sameNot": 33
+   }
+  },
+  {
+   "params": {
+    "give0": 3,
+    "givePerStretch": 16,
+    "spillScale": 0.8
+   },
+   "agreement": 0.8401,
+   "corr": 0.8589,
+   "fit": 0.8669,
+   "wTotal": 269,
+   "seatConf": {
+    "upSpill": 185,
+    "upNot": 9,
+    "downGap": 41,
+    "downNot": 1,
+    "sameSeat": 0,
+    "sameNot": 33
+   }
+  },
+  {
+   "params": {
+    "give0": 2,
+    "givePerStretch": 12,
+    "spillScale": 0.8
+   },
+   "agreement": 0.8401,
+   "corr": 0.8558,
+   "fit": 0.8665,
+   "wTotal": 269,
+   "seatConf": {
+    "upSpill": 187,
+    "upNot": 7,
+    "downGap": 39,
+    "downNot": 3,
+    "sameSeat": 0,
+    "sameNot": 33
+   }
+  },
+  {
+   "params": {
+    "give0": 1,
+    "givePerStretch": 16,
+    "spillScale": 0.8
+   },
+   "agreement": 0.8401,
+   "corr": 0.8554,
+   "fit": 0.8664,
+   "wTotal": 269,
+   "seatConf": {
+    "upSpill": 187,
+    "upNot": 7,
+    "downGap": 39,
+    "downNot": 3,
+    "sameSeat": 0,
+    "sameNot": 33
+   }
+  },
+  {
+   "params": {
+    "give0": 4,
+    "givePerStretch": 16,
+    "spillScale": 0.8
+   },
+   "agreement": 0.8364,
+   "corr": 0.86,
+   "fit": 0.8645,
+   "wTotal": 269,
+   "seatConf": {
+    "upSpill": 184,
+    "upNot": 10,
+    "downGap": 41,
+    "downNot": 1,
+    "sameSeat": 0,
+    "sameNot": 33
+   }
+  },
+  {
+   "params": {
+    "give0": 4,
+    "givePerStretch": 16,
+    "spillScale": 1.3
+   },
+   "agreement": 0.8364,
+   "corr": 0.86,
+   "fit": 0.8645,
+   "wTotal": 269,
+   "seatConf": {
+    "upSpill": 187,
+    "upNot": 7,
+    "downGap": 38,
+    "downNot": 4,
+    "sameSeat": 0,
+    "sameNot": 33
+   }
+  },
+  {
+   "params": {
+    "give0": 3,
+    "givePerStretch": 16,
+    "spillScale": 1
+   },
+   "agreement": 0.8364,
+   "corr": 0.8589,
+   "fit": 0.8643,
+   "wTotal": 269,
+   "seatConf": {
+    "upSpill": 186,
+    "upNot": 8,
+    "downGap": 39,
+    "downNot": 3,
+    "sameSeat": 0,
+    "sameNot": 33
+   }
+  },
+  {
+   "params": {
+    "give0": 3,
+    "givePerStretch": 12,
+    "spillScale": 1
+   },
+   "agreement": 0.8364,
+   "corr": 0.8577,
+   "fit": 0.8642,
+   "wTotal": 269,
+   "seatConf": {
+    "upSpill": 187,
+    "upNot": 7,
+    "downGap": 38,
+    "downNot": 4,
+    "sameSeat": 0,
+    "sameNot": 33
+   }
+  },
+  {
+   "params": {
+    "give0": 4,
+    "givePerStretch": 8,
+    "spillScale": 0.8
+   },
+   "agreement": 0.8364,
+   "corr": 0.8579,
+   "fit": 0.8642,
+   "wTotal": 269,
+   "seatConf": {
+    "upSpill": 185,
+    "upNot": 9,
+    "downGap": 40,
+    "downNot": 2,
+    "sameSeat": 0,
+    "sameNot": 33
+   }
+  },
+  {
+   "params": {
+    "give0": 4,
+    "givePerStretch": 8,
+    "spillScale": 1
+   },
+   "agreement": 0.8364,
+   "corr": 0.8579,
+   "fit": 0.8642,
+   "wTotal": 269,
+   "seatConf": {
+    "upSpill": 187,
+    "upNot": 7,
+    "downGap": 38,
+    "downNot": 4,
+    "sameSeat": 0,
+    "sameNot": 33
+   }
+  },
+  {
+   "params": {
+    "give0": 2,
+    "givePerStretch": 16,
+    "spillScale": 0.8
+   },
+   "agreement": 0.8364,
+   "corr": 0.8574,
+   "fit": 0.8641,
+   "wTotal": 269,
+   "seatConf": {
+    "upSpill": 185,
+    "upNot": 9,
+    "downGap": 40,
+    "downNot": 2,
+    "sameSeat": 0,
+    "sameNot": 33
+   }
+  }
+ ]
+}

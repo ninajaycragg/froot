@@ -14,6 +14,7 @@ import BraRunsBadge from './BraRunsBadge'
 import ShockCard from './ShockCard'
 import PeopleLikeYou from './PeopleLikeYou'
 import FitTwinsPanel from './FitTwinsPanel'
+import BuyButton from './BuyButton'
 import MaterialChip from './MaterialChip'
 import BrandSocialProof from './BrandSocialProof'
 import TransitionFlow from './TransitionFlow'
@@ -179,6 +180,12 @@ export default function FrootResults({
             sizeResult: { sizeUS: result.sizeUS, sizeUK: result.sizeUK, bustDifference: result.bustDifference, bandSize: result.bandSize },
             shapeProfile,
             fitCheckData: fitCheckData || undefined,
+            // Twin personalization: hand the route the bras she owns + the
+            // sharpened belief so the new ranking signals (belief / bra-runs /
+            // stretch / owned-feedback) can fire. Both degrade to the legacy
+            // ranking when absent (no profile / no logged bras).
+            fitFeedback: profile?.fitFeedback ?? undefined,
+            refinedSize: profile?.refinedSize ?? undefined,
           }),
         })
         if (!res.ok) throw new Error('api error')
@@ -667,26 +674,19 @@ export default function FrootResults({
               )}
             </AnimatePresence>
 
-            {/* Big CTA */}
+            {/* Big CTA — centralized affiliate URL + analytics ping */}
             <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-              {topMatch.url && (
-                <a href={withRef(topMatch.url)} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none', flex: 1 }}>
-                  <motion.div
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    style={{
-                      fontFamily: 'var(--font-space-mono)', fontSize: '11px', letterSpacing: '0.15em',
-                      textTransform: 'uppercase', textAlign: 'center',
-                      padding: '14px 24px', borderRadius: '28px',
-                      background: '#D4A020', color: '#FAF6EE',
-                      boxShadow: '0 2px 8px rgba(212,160,32,0.25)',
-                      cursor: 'pointer', transition: 'all 0.3s ease',
-                    }}
-                  >
-                    Shop this bra &#8599;
-                  </motion.div>
-                </a>
-              )}
+              <div style={{ flex: 1, display: 'flex' }}>
+                <BuyButton
+                  brand={topMatch.brand}
+                  style={topMatch.style}
+                  size={topMatch.bestSize}
+                  label="shop this bra"
+                  variant="primary"
+                  source="top-pick"
+                  block
+                />
+              </div>
               {profile && (
                 <motion.button
                   whileHover={{ scale: 1.05 }}

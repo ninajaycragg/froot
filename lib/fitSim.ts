@@ -59,6 +59,13 @@
 // flesh. The point is the *picture* and a score that agrees with the scalar.
 // ──────────────────────────────────────────────────────────────────────────
 
+// The forgiveness band (give per unit stretch) is no longer hardcoded here —
+// it's the one free parameter the sim↔data fusion loop calibrates against real
+// size-transitions. We consume it from lib/fitFusion so a re-run of
+// scripts/fusion/calibrate.mjs propagates automatically; it falls back to the
+// historical 2 + stretch*12 defaults when no calibration file is present.
+import { give as fusionGive } from '@/lib/fitFusion'
+
 // ── Public input shapes ─────────────────────────────────────────────────────
 
 /** Body twin — froot's ShapeProfile, resolved to side-profile scalars (mm/cc). */
@@ -195,8 +202,10 @@ export function simulateFit(twin: BreastTwin, cup: BraCup): FitResult {
 
   // Stretch widens the forgiveness band: rigid ⇒ ~2mm, stretchy ⇒ ~14mm of
   // give before tissue counts as spilling. This is THE "stretch is forgiving"
-  // encoding — it scales the tolerance, not the geometry.
-  const give = 2 + cup.stretch * 12
+  // encoding — it scales the tolerance, not the geometry. The give0 /
+  // givePerStretch coefficients are the calibrated fusion params (fitFusion),
+  // not magic numbers — calibrate.mjs pins them to real size-transitions.
+  const give = fusionGive(cup.stretch)
 
   let gapSum = 0 // cup proud of tissue (empty pocket)
   let spillSum = 0 // tissue proud of cup beyond give (overflow)
