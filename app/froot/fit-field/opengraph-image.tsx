@@ -9,6 +9,10 @@ export const alt = 'see it fit your shape — froot fit field'
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 
+// Playfair Display 500 (OFL) — the site's own serif; the edge renderer has no
+// system Georgia, so without embedding, headlines silently fall back to sans.
+const serif = fetch(new URL('../og-serif.ttf', import.meta.url)).then((r) => r.arrayBuffer())
+
 const INK = '#1A0808'
 const WARM = '#8A7060'
 const DIG = '#C5352C'
@@ -24,7 +28,7 @@ function Legend({ clr, label }: { clr: string; label: string }) {
   )
 }
 
-export default function Image() {
+export default async function Image() {
   return new ImageResponse(
     (
       <div
@@ -47,7 +51,7 @@ export default function Image() {
           <div
             style={{
               fontSize: 50,
-              fontFamily: 'Georgia, serif',
+              fontFamily: 'Playfair',
               lineHeight: 1.14,
               marginTop: 20,
             }}
@@ -106,6 +110,9 @@ export default function Image() {
         </div>
       </div>
     ),
-    { ...size },
+    {
+      ...size,
+      fonts: [{ name: 'Playfair', data: await serif, weight: 500 as const, style: 'normal' as const }],
+    },
   )
 }

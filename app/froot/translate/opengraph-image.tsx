@@ -10,6 +10,9 @@ export const alt = 'your size in every brand — froot fit-truth'
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 
+// Playfair Display 500 (OFL) — the site's own serif; edge has no system Georgia.
+const serif = fetch(new URL('../og-serif.ttf', import.meta.url)).then((r) => r.arrayBuffer())
+
 const INK = '#1A0808'
 const POPPY = '#C5352C'
 const SAGE = '#7E9B52'
@@ -28,7 +31,7 @@ function Chip({ brand, label, tone }: { brand: string; label: string; tone: stri
         border: '1px solid rgba(26,8,8,0.08)',
       }}
     >
-      <div style={{ fontSize: 46, fontFamily: 'Georgia, serif', color: INK }}>{label}</div>
+      <div style={{ fontSize: 46, fontFamily: 'Playfair', color: INK }}>{label}</div>
       <div style={{ fontSize: 17, marginTop: 8, letterSpacing: '0.12em', textTransform: 'uppercase', color: tone }}>
         {brand}
       </div>
@@ -36,7 +39,7 @@ function Chip({ brand, label, tone }: { brand: string; label: string; tone: stri
   )
 }
 
-export default function Image() {
+export default async function Image() {
   return new ImageResponse(
     (
       <div
@@ -57,7 +60,7 @@ export default function Image() {
         <div
           style={{
             fontSize: 62,
-            fontFamily: 'Georgia, serif',
+            fontFamily: 'Playfair',
             lineHeight: 1.12,
             marginTop: 20,
             maxWidth: 900,
@@ -86,6 +89,9 @@ export default function Image() {
         </div>
       </div>
     ),
-    { ...size },
+    {
+      ...size,
+      fonts: [{ name: 'Playfair', data: await serif, weight: 500 as const, style: 'normal' as const }],
+    },
   )
 }
