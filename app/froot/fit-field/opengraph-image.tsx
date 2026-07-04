@@ -46,9 +46,9 @@ export default function Image() {
           </div>
           <div
             style={{
-              fontSize: 58,
+              fontSize: 50,
               fontFamily: 'Georgia, serif',
-              lineHeight: 1.12,
+              lineHeight: 1.14,
               marginTop: 20,
             }}
           >
