@@ -502,6 +502,82 @@ export default function FrootPage() {
           {renderStep()}
         </motion.div>
       </AnimatePresence>
+
+      {/* footer — only on the landing (choose) screen. This is the internal-link
+          spine for the SEO landers: stories/community/making-of have NO other
+          inbound links, and orphan pages can't rank. Quiet, editorial, 375px-safe. */}
+      {mode === 'choose' && step === 0 && (
+        <footer style={{
+          position: 'relative',
+          maxWidth: 880,
+          margin: '0 auto',
+          padding: '48px 24px 40px',
+          borderTop: '1px solid rgba(26,8,8,0.08)',
+        }}>
+          <div style={{
+            display: 'flex', flexWrap: 'wrap', gap: '32px 56px', justifyContent: 'flex-start',
+          }}>
+            {[
+              {
+                group: 'find your fit',
+                links: [
+                  { href: '/froot/fit-field', label: 'the mirror' },
+                  { href: '/froot/lab', label: 'the fit lab' },
+                  { href: '/lookup', label: 'size lookup' },
+                ],
+              },
+              {
+                group: 'know the truth',
+                links: [
+                  { href: '/froot/translate', label: 'size translator' },
+                  { href: '/froot/brands', label: 'brand truth' },
+                  { href: '/froot/myths', label: 'myths, debunked' },
+                  { href: '/froot/oracle', label: 'ask the oracle' },
+                ],
+              },
+              {
+                group: 'the story',
+                links: [
+                  { href: '/froot/stories', label: 'real fit stories' },
+                  { href: '/froot/community', label: 'what the community knows' },
+                  { href: '/froot/making-of', label: 'the making of froot' },
+                ],
+              },
+            ].map((col) => (
+              <div key={col.group} style={{ minWidth: 160 }}>
+                <div style={{
+                  fontFamily: 'var(--font-space-mono)', fontSize: 9, letterSpacing: '0.22em',
+                  textTransform: 'uppercase', color: 'rgba(26,8,8,0.3)', marginBottom: 12,
+                }}>
+                  {col.group}
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {col.links.map((l) => (
+                    <a
+                      key={l.href}
+                      href={l.href}
+                      style={{
+                        fontSize: 13, color: 'rgba(26,8,8,0.55)', textDecoration: 'none',
+                        transition: 'color 0.2s ease',
+                      }}
+                      onMouseEnter={(e) => (e.currentTarget.style.color = '#C5352C')}
+                      onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(26,8,8,0.55)')}
+                    >
+                      {l.label}
+                    </a>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+          <div style={{
+            marginTop: 36, fontFamily: 'var(--font-space-mono)', fontSize: 8,
+            letterSpacing: '0.08em', color: 'rgba(26,8,8,0.18)',
+          }}>
+            froot &middot; sized from 265K+ real measurements &middot; every answer gets truer as real fit outcomes come in
+          </div>
+        </footer>
+      )}
     </main>
     </FrootProfileProvider>
   )
