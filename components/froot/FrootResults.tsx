@@ -16,6 +16,7 @@ import PeopleLikeYou from './PeopleLikeYou'
 import FitTwinsPanel from './FitTwinsPanel'
 import BuyButton from './BuyButton'
 import MaterialChip from './MaterialChip'
+import SizeCardCapture from './SizeCardCapture'
 import BrandSocialProof from './BrandSocialProof'
 import TransitionFlow from './TransitionFlow'
 import { useProfile } from './FrootProfileContext'
@@ -157,11 +158,6 @@ export default function FrootResults({
   // Owned-bra add flow (manual entry) — separate from rating a recommended bra.
   const [addBraOpen, setAddBraOpen] = useState(false)
   const { profile } = useProfile()
-
-  // Legacy email capture state (kept for backward compat, hidden when profile card is shown)
-  const [email, setEmail] = useState('')
-  const [emailSent, setEmailSent] = useState(false)
-  const [emailError, setEmailError] = useState(false)
 
   useEffect(() => {
     if (!adviceLoading) return
@@ -1169,6 +1165,19 @@ export default function FrootResults({
             Start over
           </motion.button>
         </div>
+
+        {/* ═══════════ SAVE YOUR SIZE CARD ═══════════ */}
+        <SizeCardCapture
+          sizeUK={result.sizeUK}
+          sizeUS={result.sizeUS}
+          shape={shapeProfile}
+          goal={aestheticGoal}
+          topMatches={dataCtx?.styleMatches?.slice(0, 5).map((s) => ({
+            brand: s.brand,
+            style: s.style,
+            bestSize: s.bestSize,
+          }))}
+        />
 
         <a
           href="/lookup"

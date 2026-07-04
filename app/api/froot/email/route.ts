@@ -1,50 +1,53 @@
 import { NextResponse } from 'next/server'
-import { appendFileSync, existsSync, readFileSync } from 'fs'
-import { join } from 'path'
+import { Redis } from '@upstash/redis'
 
-const SUBSCRIBERS_FILE = join(process.cwd(), 'data', 'froot-subscribers.json')
+// email — subscriber capture. Previously wrote to data/froot-subscribers.json via
+// writeFileSync, which 500s on Vercel's read-only filesystem — every subscriber
+// was silently lost in prod. Now lands in Redis (same store as the fit loop):
+//   froot:subscribers   hash keyed by lowercased email → record (free dedupe)
+// Degrades gracefully: without Redis env we still 200 (never punish the signup),
+// flagged stored:false so it's visible in dev.
+// TODO: wire actual sending (Resend) — capture is the durable part; send can wait.
+
+let redis: Redis | null = null
+function getRedis(): Redis | null {
+  if (redis) return redis
+  const url = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL
+  const token = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN
+  if (!url || !token) return null
+  redis = new Redis({ url, token })
+  return redis
+}
+
+const HASH = 'froot:subscribers'
 
 export async function POST(req: Request) {
   try {
     const body = await req.json()
     const { email, sizeUK, sizeUS, shape, goal, topMatches } = body
 
-    if (!email || !email.includes('@')) {
+    if (typeof email !== 'string' || !email.includes('@')) {
       return NextResponse.json({ error: 'Invalid email' }, { status: 400 })
     }
+    const key = email.toLowerCase().trim()
 
-    // Load existing subscribers
-    let subscribers: Array<Record<string, unknown>> = []
-    if (existsSync(SUBSCRIBERS_FILE)) {
-      try {
-        subscribers = JSON.parse(readFileSync(SUBSCRIBERS_FILE, 'utf-8'))
-      } catch {
-        subscribers = []
-      }
-    }
+    const r = getRedis()
+    if (!r) return NextResponse.json({ ok: true, message: 'Subscribed', stored: false })
 
-    // Check for duplicate
-    const exists = subscribers.some(s => s.email === email.toLowerCase().trim())
-    if (!exists) {
-      subscribers.push({
-        email: email.toLowerCase().trim(),
+    // hash keyed by email → duplicate signups just refresh the record
+    await r.hset(HASH, {
+      [key]: JSON.stringify({
+        email: key,
         sizeUK,
         sizeUS,
         shape,
         goal,
-        topMatches: topMatches?.slice(0, 5),
+        topMatches: Array.isArray(topMatches) ? topMatches.slice(0, 5) : undefined,
         timestamp: new Date().toISOString(),
-      })
+      }),
+    })
 
-      // Write back
-      const { writeFileSync } = await import('fs')
-      writeFileSync(SUBSCRIBERS_FILE, JSON.stringify(subscribers, null, 2))
-    }
-
-    // TODO: Wire up actual email sending (Resend, SendGrid, etc.)
-    // For now, just stores the subscriber data
-
-    return NextResponse.json({ ok: true, message: 'Subscribed' })
+    return NextResponse.json({ ok: true, message: 'Subscribed', stored: true })
   } catch (err) {
     console.error('Email subscribe error:', err)
     return NextResponse.json({ error: 'Failed' }, { status: 500 })

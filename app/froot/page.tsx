@@ -451,21 +451,33 @@ export default function FrootPage() {
         {showProgress ? (
           <FrootProgress current={step} total={totalSteps} />
         ) : mode === 'choose' ? (
-          <a
-            href="/froot/lab"
-            style={{
-              fontSize: '9px',
-              letterSpacing: '0.15em',
-              color: 'rgba(26,8,8,0.3)',
-              textTransform: 'uppercase',
-              textDecoration: 'none',
-              transition: 'color 0.2s ease',
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.color = 'rgba(197,53,44,0.8)')}
-            onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(26,8,8,0.3)')}
-          >
-            the fit lab &rarr;
-          </a>
+          <span style={{ display: 'flex', gap: 14 }}>
+            {[
+              { href: '/froot/fit-field', label: 'the mirror →' },
+              { href: '/froot/translate', label: 'size translator →' },
+              { href: '/froot/brands', label: 'brand truth →' },
+              { href: '/froot/myths', label: 'myths →' },
+              { href: '/froot/oracle', label: 'the oracle →' },
+              { href: '/froot/lab', label: 'the fit lab →' },
+            ].map((l) => (
+              <a
+                key={l.href}
+                href={l.href}
+                style={{
+                  fontSize: '9px',
+                  letterSpacing: '0.15em',
+                  color: 'rgba(26,8,8,0.3)',
+                  textTransform: 'uppercase',
+                  textDecoration: 'none',
+                  transition: 'color 0.2s ease',
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = 'rgba(197,53,44,0.8)')}
+                onMouseLeave={(e) => (e.currentTarget.style.color = 'rgba(26,8,8,0.3)')}
+              >
+                {l.label}
+              </a>
+            ))}
+          </span>
         ) : (
           <span style={{
             fontSize: '9px',

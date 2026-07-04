@@ -189,6 +189,12 @@ function Lab() {
           a live side-profile twin. sculpt your shape, step a size, watch the cup find its seat —
           the green is empty cup, the red is overflow.
         </p>
+        <a
+          href="/froot/fit-field"
+          style={{ ...mono, fontSize: 10, letterSpacing: '0.18em', textTransform: 'uppercase', color: C.poppy, textDecoration: 'none' }}
+        >
+          see it in 3d — the mirror &rarr;
+        </a>
       </div>
 
       <motion.div
