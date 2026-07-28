@@ -1,0 +1,24 @@
+{
+  "name": "burden",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Which elements carry their burden? Claims → elements → facts → evidence spans, with stance, corrections, and incremental ingest.",
+  "type": "module",
+  "scripts": {
+    "cli": "tsx src/cli.ts",
+    "init": "tsx src/cli.ts init",
+    "seed": "tsx src/cli.ts seed",
+    "ingest": "tsx src/cli.ts ingest",
+    "weak": "tsx src/cli.ts weak"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.104.1",
+    "@electric-sql/pglite": "^0.2.17",
+    "@huggingface/transformers": "^3.3.1",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}
