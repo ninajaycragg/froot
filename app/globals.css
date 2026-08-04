@@ -1,13 +1,18 @@
 @import "tailwindcss";
 
 @theme {
-  --color-bg: #FAF6EE;
-  --color-ink: #1A0808;
+  --color-bg: #F7F3EA;
+  --color-ink: #15170F;
+  --color-paper: #F7F3EA;
+  --color-yellow: #E8B923;
+  --color-terracotta: #B5673F;
+  --color-stone: #948D7D;
+  /* deprecated: kept so any existing bg-poppy/text-rose/etc usages elsewhere don't break */
   --color-poppy: #C5352C;
   --color-rose: #D4789A;
   --color-meadow: #5C8C4A;
-  --color-gold: #D4A020;
-  --color-muted: #8A7060;
+  --color-gold: #E8B923;
+  --color-muted: #948D7D;
 
   --font-serif: var(--font-dm-serif), Georgia, "Times New Roman", serif;
   --font-mono: var(--font-space-mono), "Courier New", monospace;
@@ -22,8 +27,8 @@
 html, body {
   height: 100%;
   height: 100dvh;
-  background-color: #FAF6EE;
-  color: #1A0808;
+  background-color: #F7F3EA;
+  color: #15170F;
 }
 
 body {
@@ -33,8 +38,8 @@ body {
 }
 
 ::selection {
-  background-color: #C5352C;
-  color: #FAF6EE;
+  background-color: #B5673F;
+  color: #F7F3EA;
 }
 
 a { color: inherit; text-decoration: none; }

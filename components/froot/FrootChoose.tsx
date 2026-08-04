@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { motion } from 'framer-motion'
+import { useRef, useState } from 'react'
+import { motion, useScroll, useTransform } from 'framer-motion'
 
 interface FrootChooseProps {
   unit: 'in' | 'cm'
@@ -13,6 +13,16 @@ interface FrootChooseProps {
 }
 
 const EASE: [number, number, number, number] = [0.16, 1, 0.3, 1]
+
+// palette — sampled for "The Instrument" direction, not the old cream/red/sage set
+const INK = '#15170F'
+const PAPER = '#F7F3EA'
+const YELLOW = '#E8B923'
+const TERRACOTTA = '#B5673F'
+const STONE = '#948D7D'
+
+const OPSZ_DISPLAY = "'opsz' 100"
+const OPSZ_TEXT = "'opsz' 40"
 
 const PATHS = [
   {
@@ -36,7 +46,7 @@ const PATHS = [
   {
     key: 'lookup' as const,
     number: '04',
-    title: 'What\u2019s my size in this?',
+    title: 'What’s my size in this?',
     desc: 'look up your size in a specific brand or style',
   },
 ]
@@ -49,6 +59,13 @@ const PROOF_STATS = [
 
 export default function FrootChoose({ unit, onUnitChange, onMeasure, onFitCheck, onConvert, onDemo }: FrootChooseProps) {
   const [hovered, setHovered] = useState<string | null>(null)
+  const heroRef = useRef<HTMLDivElement>(null)
+
+  // Apple hero-scroll pattern: the hero backdrop scales up slightly and fades
+  // as the user scrolls past it, rather than sitting static or auto-animating.
+  const { scrollYProgress } = useScroll({ target: heroRef, offset: ['start start', 'end start'] })
+  const heroScale = useTransform(scrollYProgress, [0, 1], [1, 1.06])
+  const heroOpacity = useTransform(scrollYProgress, [0, 1], [1, 0.55])
 
   const actions: Record<string, () => void> = {
     measure: onMeasure,
@@ -62,19 +79,57 @@ export default function FrootChoose({ unit, onUnitChange, onMeasure, onFitCheck,
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
-      padding: '0 24px',
+      width: '100%',
     }}>
 
       {/* ═══════════ HERO — the hook ═══════════ */}
-      <div style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: '100vh',
-        paddingTop: '40px',
-        paddingBottom: '20px',
-      }}>
+      <div
+        ref={heroRef}
+        style={{
+          position: 'relative',
+          width: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: '100vh',
+          paddingTop: '40px',
+          paddingBottom: '20px',
+          paddingLeft: '24px',
+          paddingRight: '24px',
+          overflow: 'hidden',
+        }}
+      >
+        {/* Hero photo — the single dominant focal ground, Apple hero-scroll pattern.
+            Macro tape-measure shot, verified directly against unsplash.com (Unsplash
+            License — free for commercial use, no attribution required).
+            Photographer: josh A. D. (@mista_j), https://unsplash.com/photos/wTtBtw80erg */}
+        <motion.div
+          aria-hidden
+          style={{
+            position: 'absolute',
+            inset: 0,
+            zIndex: 0,
+            scale: heroScale,
+            opacity: heroOpacity,
+            backgroundImage: 'url(/images/hero-tape-measure.jpg)',
+            backgroundSize: 'cover',
+            backgroundPosition: '30% 55%',
+          }}
+        />
+        {/* Scrim — keeps headline/CTA legible over the photo without flattening it */}
+        <div
+          aria-hidden
+          style={{
+            position: 'absolute',
+            inset: 0,
+            zIndex: 0,
+            background: 'linear-gradient(180deg, rgba(21,23,15,0.72) 0%, rgba(21,23,15,0.15) 30%, rgba(21,23,15,0.25) 55%, rgba(21,23,15,0.9) 100%)',
+          }}
+        />
+
+        <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+
         {/* Title */}
         <motion.h1
           initial={{ opacity: 0, y: 20 }}
@@ -83,9 +138,10 @@ export default function FrootChoose({ unit, onUnitChange, onMeasure, onFitCheck,
           style={{
             fontFamily: 'var(--font-dm-serif), Georgia, serif',
             fontStyle: 'italic',
+            fontVariationSettings: OPSZ_DISPLAY,
             fontSize: 'clamp(52px, 9vw, 80px)',
-            color: '#1A0808',
-            fontWeight: 400,
+            color: PAPER,
+            fontWeight: 480,
             marginBottom: '8px',
             letterSpacing: '-0.02em',
             lineHeight: 1,
@@ -94,12 +150,12 @@ export default function FrootChoose({ unit, onUnitChange, onMeasure, onFitCheck,
           Froot
         </motion.h1>
 
-        {/* Thin gold accent line */}
+        {/* Thin accent line */}
         <motion.div
           initial={{ width: 0, opacity: 0 }}
           animate={{ width: '32px', opacity: 1 }}
           transition={{ delay: 0.3, duration: 0.6, ease: EASE }}
-          style={{ height: '1.5px', background: '#D4A020', marginBottom: '20px', borderRadius: '1px' }}
+          style={{ height: '1.5px', background: YELLOW, marginBottom: '20px', borderRadius: '1px' }}
         />
 
         {/* The hook — make it personal, make it a dare */}
@@ -110,9 +166,10 @@ export default function FrootChoose({ unit, onUnitChange, onMeasure, onFitCheck,
           style={{
             fontFamily: 'var(--font-dm-serif), Georgia, serif',
             fontStyle: 'italic',
+            fontVariationSettings: OPSZ_TEXT,
             fontSize: 'clamp(20px, 4vw, 28px)',
             lineHeight: 1.5,
-            color: '#1A0808',
+            color: PAPER,
             maxWidth: '400px',
             textAlign: 'center',
             marginBottom: '8px',
@@ -128,7 +185,7 @@ export default function FrootChoose({ unit, onUnitChange, onMeasure, onFitCheck,
             fontFamily: 'var(--font-space-mono), monospace',
             fontSize: '11px',
             lineHeight: 1.9,
-            color: 'rgba(26,8,8,0.4)',
+            color: 'rgba(247,243,234,0.55)',
             maxWidth: '360px',
             textAlign: 'center',
             letterSpacing: '0.02em',
@@ -151,7 +208,7 @@ export default function FrootChoose({ unit, onUnitChange, onMeasure, onFitCheck,
             justifyContent: 'center',
           }}
         >
-          {['34B \u2192 30DD', '36C \u2192 32F', '38D \u2192 34G'].map((t, i) => (
+          {['34B → 30DD', '36C → 32F', '38D → 34G'].map((t, i) => (
             <motion.span
               key={t}
               initial={{ opacity: 0, y: 6 }}
@@ -160,7 +217,8 @@ export default function FrootChoose({ unit, onUnitChange, onMeasure, onFitCheck,
               style={{
                 fontFamily: 'var(--font-space-mono), monospace',
                 fontSize: '12px',
-                color: '#D4A020',
+                fontVariantNumeric: 'tabular-nums',
+                color: YELLOW,
                 letterSpacing: '0.05em',
               }}
             >
@@ -175,7 +233,7 @@ export default function FrootChoose({ unit, onUnitChange, onMeasure, onFitCheck,
           style={{
             fontFamily: 'var(--font-space-mono), monospace',
             fontSize: '9px',
-            color: 'rgba(26,8,8,0.2)',
+            color: 'rgba(247,243,234,0.35)',
             letterSpacing: '0.08em',
             textTransform: 'uppercase',
             marginBottom: '40px',
@@ -184,7 +242,7 @@ export default function FrootChoose({ unit, onUnitChange, onMeasure, onFitCheck,
           these are real.
         </motion.p>
 
-        {/* Social proof stats */}
+        {/* Social proof stats — real data, so mono + tabular numerals, not decorative serif */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
@@ -204,11 +262,11 @@ export default function FrootChoose({ unit, onUnitChange, onMeasure, onFitCheck,
               style={{ textAlign: 'center' }}
             >
               <div style={{
-                fontFamily: 'var(--font-dm-serif), Georgia, serif',
-                fontStyle: 'italic',
-                fontSize: 'clamp(20px, 3vw, 28px)',
-                color: '#D4A020',
-                fontWeight: 400,
+                fontFamily: 'var(--font-space-mono), monospace',
+                fontVariantNumeric: 'tabular-nums',
+                fontWeight: 700,
+                fontSize: 'clamp(18px, 2.6vw, 24px)',
+                color: YELLOW,
                 lineHeight: 1.2,
               }}>
                 {stat.value}
@@ -216,7 +274,7 @@ export default function FrootChoose({ unit, onUnitChange, onMeasure, onFitCheck,
               <div style={{
                 fontFamily: 'var(--font-space-mono), monospace',
                 fontSize: '8px',
-                color: 'rgba(26,8,8,0.25)',
+                color: 'rgba(247,243,234,0.4)',
                 letterSpacing: '0.06em',
                 marginTop: '4px',
                 textTransform: 'uppercase',
@@ -232,21 +290,22 @@ export default function FrootChoose({ unit, onUnitChange, onMeasure, onFitCheck,
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.7, duration: 0.4, ease: EASE }}
-          whileHover={{ scale: 1.04, boxShadow: '0 4px 16px rgba(212,160,32,0.25)' }}
+          whileHover={{ scale: 1.04, boxShadow: '0 4px 16px rgba(232,185,35,0.3)' }}
           whileTap={{ scale: 0.97 }}
           onClick={onMeasure}
           style={{
             fontFamily: 'var(--font-space-mono), monospace',
             fontSize: '11px',
+            fontWeight: 700,
             letterSpacing: '0.15em',
             textTransform: 'uppercase',
             padding: '16px 48px',
             border: 'none',
-            borderRadius: '28px',
-            background: '#D4A020',
-            color: '#FAF6EE',
+            borderRadius: '3px',
+            background: YELLOW,
+            color: '#201A04',
             cursor: 'pointer',
-            boxShadow: '0 2px 8px rgba(212,160,32,0.2)',
+            boxShadow: '0 2px 8px rgba(232,185,35,0.25)',
             transition: 'all 0.3s ease',
             marginBottom: '14px',
           }}
@@ -261,7 +320,7 @@ export default function FrootChoose({ unit, onUnitChange, onMeasure, onFitCheck,
           style={{
             fontFamily: 'var(--font-space-mono), monospace',
             fontSize: '9px',
-            color: 'rgba(26,8,8,0.2)',
+            color: 'rgba(247,243,234,0.35)',
             letterSpacing: '0.04em',
           }}
         >
@@ -274,15 +333,15 @@ export default function FrootChoose({ unit, onUnitChange, onMeasure, onFitCheck,
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.95, duration: 0.4 }}
-          whileHover={{ color: 'rgba(26,8,8,0.5)' }}
+          whileHover={{ color: 'rgba(247,243,234,0.7)' }}
           style={{
             fontFamily: 'var(--font-space-mono), monospace',
             fontSize: '10px',
-            color: 'rgba(26,8,8,0.25)',
+            color: 'rgba(247,243,234,0.4)',
             letterSpacing: '0.04em',
             marginTop: '20px',
             textDecoration: 'none',
-            borderBottom: '1px solid rgba(26,8,8,0.1)',
+            borderBottom: '1px solid rgba(247,243,234,0.2)',
             paddingBottom: '2px',
             cursor: 'pointer',
           }}
@@ -293,7 +352,7 @@ export default function FrootChoose({ unit, onUnitChange, onMeasure, onFitCheck,
         {/* Scroll hint */}
         <motion.div
           initial={{ opacity: 0 }}
-          animate={{ opacity: 0.2 }}
+          animate={{ opacity: 0.35 }}
           transition={{ delay: 1.2, duration: 0.6 }}
           style={{
             position: 'absolute',
@@ -307,7 +366,7 @@ export default function FrootChoose({ unit, onUnitChange, onMeasure, onFitCheck,
           <span style={{
             fontFamily: 'var(--font-space-mono), monospace',
             fontSize: '8px',
-            color: 'rgba(26,8,8,0.25)',
+            color: 'rgba(247,243,234,0.4)',
             letterSpacing: '0.1em',
           }}>
             or choose your path
@@ -315,11 +374,12 @@ export default function FrootChoose({ unit, onUnitChange, onMeasure, onFitCheck,
           <motion.span
             animate={{ y: [0, 4, 0] }}
             transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
-            style={{ fontSize: '14px', color: 'rgba(26,8,8,0.15)' }}
+            style={{ fontSize: '14px', color: 'rgba(247,243,234,0.3)' }}
           >
             &#8964;
           </motion.span>
         </motion.div>
+        </div>
       </div>
 
 
@@ -329,6 +389,9 @@ export default function FrootChoose({ unit, onUnitChange, onMeasure, onFitCheck,
         maxWidth: '440px',
         paddingTop: '40px',
         paddingBottom: '60px',
+        paddingLeft: '24px',
+        paddingRight: '24px',
+        background: PAPER,
       }}>
         {/* How it works — quick and editorial */}
         <motion.div
@@ -341,8 +404,9 @@ export default function FrootChoose({ unit, onUnitChange, onMeasure, onFitCheck,
           <p style={{
             fontFamily: 'var(--font-dm-serif), Georgia, serif',
             fontStyle: 'italic',
+            fontVariationSettings: OPSZ_TEXT,
             fontSize: '16px',
-            color: 'rgba(26,8,8,0.35)',
+            color: STONE,
             marginBottom: '24px',
           }}>
             How it works
@@ -367,18 +431,18 @@ export default function FrootChoose({ unit, onUnitChange, onMeasure, onFitCheck,
               }}
             >
               <span style={{
-                fontFamily: 'var(--font-dm-serif), Georgia, serif',
-                fontStyle: 'italic',
-                fontSize: '14px',
-                color: 'rgba(212,160,32,0.3)',
-                minWidth: '24px',
+                fontFamily: 'var(--font-space-mono), monospace',
+                fontVariantNumeric: 'tabular-nums',
+                fontSize: '11px',
+                color: TERRACOTTA,
+                minWidth: '20px',
               }}>
                 {item.step}
               </span>
               <span style={{
                 fontFamily: 'var(--font-space-mono), monospace',
                 fontSize: '11px',
-                color: 'rgba(26,8,8,0.45)',
+                color: 'rgba(21,23,15,0.6)',
                 lineHeight: 1.7,
               }}>
                 {item.text}
@@ -395,17 +459,18 @@ export default function FrootChoose({ unit, onUnitChange, onMeasure, onFitCheck,
           transition={{ duration: 0.6 }}
           style={{
             padding: '24px',
-            borderRadius: '16px',
-            background: 'rgba(212,160,32,0.03)',
-            boxShadow: '0 1px 4px rgba(212,160,32,0.06)',
+            borderRadius: '4px',
+            background: 'rgba(232,185,35,0.07)',
+            boxShadow: '0 1px 4px rgba(232,185,35,0.08)',
             marginBottom: '56px',
           }}
         >
           <p style={{
             fontFamily: 'var(--font-dm-serif), Georgia, serif',
             fontStyle: 'italic',
+            fontVariationSettings: OPSZ_TEXT,
             fontSize: '15px',
-            color: '#1A0808',
+            color: INK,
             marginBottom: '10px',
             lineHeight: 1.5,
           }}>
@@ -414,7 +479,7 @@ export default function FrootChoose({ unit, onUnitChange, onMeasure, onFitCheck,
           <p style={{
             fontFamily: 'var(--font-space-mono), monospace',
             fontSize: '10px',
-            color: 'rgba(26,8,8,0.4)',
+            color: 'rgba(21,23,15,0.55)',
             lineHeight: 1.8,
           }}>
             They use the +4 method from the 1950s, which inflates your band and shrinks your cup. We use 6 measurements, your actual shape profile, and 265K data points from real bras. The result is the size you should have been wearing this whole time.
@@ -431,8 +496,9 @@ export default function FrootChoose({ unit, onUnitChange, onMeasure, onFitCheck,
           <p style={{
             fontFamily: 'var(--font-dm-serif), Georgia, serif',
             fontStyle: 'italic',
+            fontVariationSettings: OPSZ_TEXT,
             fontSize: '16px',
-            color: 'rgba(26,8,8,0.35)',
+            color: STONE,
             marginBottom: '16px',
           }}>
             Choose your path
@@ -455,8 +521,8 @@ export default function FrootChoose({ unit, onUnitChange, onMeasure, onFitCheck,
                   alignItems: 'center',
                   gap: '16px',
                   padding: '28px 0',
-                  borderTop: i === 0 ? '1px solid rgba(26,8,8,0.06)' : 'none',
-                  borderBottom: '1px solid rgba(26,8,8,0.06)',
+                  borderTop: i === 0 ? '1px solid rgba(21,23,15,0.08)' : 'none',
+                  borderBottom: '1px solid rgba(21,23,15,0.08)',
                   borderLeft: 'none',
                   borderRight: 'none',
                   background: 'transparent',
@@ -470,9 +536,11 @@ export default function FrootChoose({ unit, onUnitChange, onMeasure, onFitCheck,
                 <span style={{
                   fontFamily: 'var(--font-dm-serif), Georgia, serif',
                   fontStyle: 'italic',
+                  fontVariationSettings: OPSZ_TEXT,
+                  fontVariantNumeric: 'tabular-nums',
                   fontSize: '28px',
-                  color: isHovered ? 'rgba(212,160,32,0.5)' : 'rgba(26,8,8,0.06)',
-                  fontWeight: 400,
+                  color: isHovered ? 'rgba(181,103,63,0.6)' : 'rgba(21,23,15,0.08)',
+                  fontWeight: 480,
                   lineHeight: 1,
                   minWidth: '44px',
                   transition: 'color 0.4s ease',
@@ -483,9 +551,10 @@ export default function FrootChoose({ unit, onUnitChange, onMeasure, onFitCheck,
                   <span style={{
                     fontFamily: 'var(--font-dm-serif), Georgia, serif',
                     fontStyle: 'italic',
+                    fontVariationSettings: OPSZ_TEXT,
                     fontSize: 'clamp(18px, 3vw, 22px)',
-                    color: isHovered ? '#1A0808' : 'rgba(26,8,8,0.7)',
-                    fontWeight: 400,
+                    color: isHovered ? INK : 'rgba(21,23,15,0.75)',
+                    fontWeight: 480,
                     lineHeight: 1.3,
                     transition: 'color 0.3s ease',
                   }}>
@@ -494,7 +563,7 @@ export default function FrootChoose({ unit, onUnitChange, onMeasure, onFitCheck,
                   <span style={{
                     fontFamily: 'var(--font-space-mono), monospace',
                     fontSize: '10px',
-                    color: isHovered ? 'rgba(26,8,8,0.45)' : 'rgba(26,8,8,0.2)',
+                    color: isHovered ? 'rgba(21,23,15,0.5)' : 'rgba(21,23,15,0.28)',
                     letterSpacing: '0.03em',
                     transition: 'color 0.3s ease',
                   }}>
@@ -502,11 +571,11 @@ export default function FrootChoose({ unit, onUnitChange, onMeasure, onFitCheck,
                   </span>
                 </div>
                 <motion.span
-                  animate={{ x: isHovered ? 6 : 0, opacity: isHovered ? 1 : 0.3 }}
+                  animate={{ x: isHovered ? 6 : 0, opacity: isHovered ? 1 : 0.35 }}
                   transition={{ type: 'spring', stiffness: 400, damping: 25 }}
                   style={{
                     fontSize: '16px',
-                    color: isHovered ? '#D4A020' : 'rgba(26,8,8,0.2)',
+                    color: isHovered ? TERRACOTTA : 'rgba(21,23,15,0.28)',
                     transition: 'color 0.3s ease',
                     flexShrink: 0,
                   }}
@@ -529,7 +598,7 @@ export default function FrootChoose({ unit, onUnitChange, onMeasure, onFitCheck,
           <div style={{
             display: 'flex',
             alignItems: 'center',
-            border: '1px solid rgba(26,8,8,0.08)',
+            border: '1px solid rgba(21,23,15,0.12)',
             borderRadius: '20px',
             overflow: 'hidden',
           }}>
@@ -545,8 +614,8 @@ export default function FrootChoose({ unit, onUnitChange, onMeasure, onFitCheck,
                   border: 'none',
                   cursor: 'pointer',
                   transition: 'all 0.3s ease',
-                  background: unit === u ? '#1A0808' : 'transparent',
-                  color: unit === u ? '#FAF6EE' : 'rgba(26,8,8,0.3)',
+                  background: unit === u ? INK : 'transparent',
+                  color: unit === u ? PAPER : 'rgba(21,23,15,0.4)',
                 }}
               >
                 {u}
@@ -556,7 +625,7 @@ export default function FrootChoose({ unit, onUnitChange, onMeasure, onFitCheck,
           <span style={{
             fontFamily: 'var(--font-space-mono), monospace',
             fontSize: '9px',
-            color: 'rgba(26,8,8,0.15)',
+            color: 'rgba(21,23,15,0.25)',
             letterSpacing: '0.05em',
           }}>
             for the measurement path
@@ -570,7 +639,7 @@ export default function FrootChoose({ unit, onUnitChange, onMeasure, onFitCheck,
               style={{
                 fontFamily: 'var(--font-space-mono), monospace',
                 fontSize: '9px',
-                color: 'rgba(26,8,8,0.15)',
+                color: 'rgba(21,23,15,0.25)',
                 letterSpacing: '0.05em',
                 background: 'none',
                 border: 'none',
@@ -580,8 +649,8 @@ export default function FrootChoose({ unit, onUnitChange, onMeasure, onFitCheck,
                 padding: 0,
                 transition: 'color 0.2s ease',
               }}
-              onMouseEnter={(e) => e.currentTarget.style.color = 'rgba(26,8,8,0.4)'}
-              onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(26,8,8,0.15)'}
+              onMouseEnter={(e) => e.currentTarget.style.color = 'rgba(21,23,15,0.55)'}
+              onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(21,23,15,0.25)'}
             >
               or try with sample data
             </button>

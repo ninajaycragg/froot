@@ -1,17 +1,17 @@
 import type { Metadata, Viewport } from 'next'
-import { Playfair_Display, Space_Mono } from 'next/font/google'
+import { Fraunces, JetBrains_Mono } from 'next/font/google'
 import './globals.css'
 
-const playfairDisplay = Playfair_Display({
-  weight: ['400', '700'],
+const fraunces = Fraunces({
   style: ['normal', 'italic'],
   subsets: ['latin'],
+  axes: ['opsz'],
   variable: '--font-dm-serif',
   display: 'swap',
 })
 
-const spaceMono = Space_Mono({
-  weight: ['400', '700'],
+const jetbrainsMono = JetBrains_Mono({
+  weight: ['400', '500', '700'],
   subsets: ['latin'],
   variable: '--font-space-mono',
   display: 'swap',
@@ -21,7 +21,7 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   viewportFit: 'cover',
-  themeColor: '#FAF6EE',
+  themeColor: '#15170F',
 }
 
 export const metadata: Metadata = {
@@ -40,7 +40,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={`${playfairDisplay.variable} ${spaceMono.variable}`}>
+    <html lang="en" className={`${fraunces.variable} ${jetbrainsMono.variable}`}>
       <body>{children}</body>
     </html>
   )
